@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decisional Capacity Assessment</title>
+  <style>
+/* ===================== DESIGN TOKENS ===================== */
+:root {
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+  --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem; --space-10: 2.5rem;
+  --radius-sm: 0.375rem; --radius-md: 0.5rem;
+  --radius-lg: 0.75rem; --radius-xl: 1rem; --radius-full: 9999px;
+  --transition: 180ms cubic-bezier(0.16,1,0.3,1);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+[data-theme='dark'], :root {
+  --color-bg: #171614;
+  --color-surface: #1c1b19;
+  --color-surface-2: #201f1d;
+  --color-surface-offset: #252422;
+  --color-border: #393836;
+  --color-text: #cdccca;
+  --color-text-muted: #797876;
+  --color-text-faint: #5a5957;
+  --color-primary: #4f98a3;
+  --color-primary-hover: #227f8b;
+  --color-primary-bg: #1e2d2d;
+  --color-primary-highlight: #313b3b;
+  --color-success: #6daa45;
+  --color-success-bg: #1e2a18;
+  --color-success-highlight: #3a4435;
+  --color-warning: #bb653b;
+  --color-warning-bg: #2a1e16;
+  --color-warning-highlight: #564942;
+  --color-error: #d163a7;
+  --color-error-bg: #2a1520;
+  --color-error-highlight: #4c3d46;
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+}
+[data-theme='light'] {
+  --color-bg: #f7f6f2; --color-surface: #f9f8f5;
+  --color-surface-2: #fbfbf9; --color-surface-offset: #f0eeea;
+  --color-border: #d4d1ca; --color-text: #28251d;
+  --color-text-muted: #7a7974; --color-text-faint: #bab9b4;
+  --color-primary: #01696f; --color-primary-hover: #0c4e54;
+  --color-primary-bg: #e8f2f1; --color-primary-highlight: #cedcd8;
+  --color-success: #437a22; --color-success-bg: #edf5e6;
+  --color-success-highlight: #d4dfcc;
+  --color-warning: #964219; --color-warning-bg: #fdf0e8;
+  --color-warning-highlight: #ddcfc6;
+  --color-error: #a12c7b; --color-error-bg: #faedf5;
+  --color-error-highlight: #e0ced7;
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: none; text-size-adjust: none; scroll-behavior: smooth; scroll-padding-top: 70px; }
+body { font-family: var(--font); font-size: var(--text-base); color: var(--color-text); background: var(--color-bg); min-height: 100dvh; line-height: 1.6; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+
+/* ===================== TOPBAR ===================== */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-5);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+}
+.topbar-left { display: flex; flex-direction: column; gap: 2px; }
+.topbar-title { font-size: var(--text-base); font-weight: 700; color: var(--color-text); }
+.topbar-subtitle { font-size: var(--text-sm); color: var(--color-text-muted); }
+.topbar-right { display: flex; align-items: center; gap: var(--space-3); }
+.breadcrumb { font-size: var(--text-sm); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; }
+.breadcrumb a { color: var(--color-primary); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--color-text-faint); }
+.theme-btn { width: 32px; height: 32px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); transition: all var(--transition); }
+.theme-btn:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.zoom-btn {
+  font-size: var(--text-sm); font-weight: 700; padding: 5px 10px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-full);
+  color: var(--color-text-muted); transition: all var(--transition);
+  letter-spacing: .02em;
+}
+.zoom-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.zoom-btn.active { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-bg); }
+.reset-btn { font-size: var(--text-sm); padding: 5px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-full); color: var(--color-text-muted); transition: all var(--transition); }
+.reset-btn:hover { border-color: var(--color-error); color: var(--color-error); }
+
+/* ===================== MAIN LAYOUT ===================== */
+.main { max-width: 760px; margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-10); }
+
+/* ===================== MODE TOGGLE ===================== */
+.mode-toggle-wrap {
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: var(--space-6);
+}
+.mode-toggle {
+  display: flex; background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-full); padding: 3px; gap: 2px;
+}
+.mode-btn {
+  padding: 7px 20px; border-radius: var(--radius-full);
+  font-size: var(--text-base); font-weight: 500; color: var(--color-text-muted);
+  transition: all var(--transition); white-space: nowrap;
+}
+.mode-btn.active {
+  background: var(--color-primary); color: #fff;
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.3);
+}
+
+/* ===================== DECISION FIELD ===================== */
+.decision-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-5);
+}
+.decision-card label {
+  display: block; font-size: var(--text-base); font-weight: 600;
+  color: var(--color-text); margin-bottom: var(--space-2);
+}
+.decision-card .field-hint {
+  font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-3);
+}
+.decision-input {
+  width: 100%; padding: 10px 14px;
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); color: var(--color-text);
+  font: inherit; font-size: var(--text-base); resize: vertical;
+  transition: border-color var(--transition);
+}
+.decision-input:focus { outline: none; border-color: var(--color-primary); }
+.decision-input::placeholder { color: var(--color-text-faint); }
+
+/* ===================== DOMAIN CARDS ===================== */
+.domain-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-4);
+}
+.domain-header { margin-bottom: var(--space-4); }
+.domain-number {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: var(--radius-full);
+  background: var(--color-primary-bg); color: var(--color-primary);
+  font-size: var(--text-sm); font-weight: 700; margin-right: var(--space-2);
+  vertical-align: middle;
+}
+.domain-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); }
+.domain-desc { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: 4px; line-height: 1.5; }
+
+/* Prompts */
+.prompts-box {
+  background: var(--color-primary-bg); border: 1px solid var(--color-primary-highlight);
+  border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-4);
+}
+.prompts-label { font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--color-primary); margin-bottom: var(--space-2); }
+.prompt-item { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: 6px; padding-left: var(--space-4); position: relative; line-height: 1.5; }
+.prompt-item::before { content: '"'; position: absolute; left: 0; color: var(--color-primary); font-weight: 700; }
+
+/* Sub-items (detailed mode) */
+.subitem { margin-bottom: var(--space-5); }
+.subitem:last-child { margin-bottom: 0; }
+.subitem-label { font-size: var(--text-base); font-weight: 600; color: var(--color-text); margin-bottom: var(--space-2); }
+
+/* Rating buttons */
+.rating-group { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); }
+.rating-btn {
+  flex: 1; padding: 10px var(--space-2); border: 2px solid var(--color-border);
+  border-radius: var(--radius-md); text-align: center; cursor: pointer;
+  transition: all var(--transition); background: var(--color-bg);
+  min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.rating-btn:hover { border-color: var(--color-primary); background: var(--color-primary-bg); }
+.rating-btn.selected { border-color: var(--color-primary); background: var(--color-primary-bg); box-shadow: 0 0 0 3px var(--color-primary-highlight); }
+.rating-btn .rb-score { font-size: var(--text-lg); font-weight: 700; color: var(--color-primary); line-height: 1; }
+.rating-btn .rb-label { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 3px; line-height: 1.2; text-align: center; }
+.rating-btn.selected .rb-label { color: var(--color-primary); }
+
+/* Notes */
+.notes-label { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: var(--space-2); }
+.notes-input {
+  width: 100%; padding: 10px 14px; min-height: 72px;
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); color: var(--color-text);
+  font: inherit; font-size: var(--text-base); resize: vertical;
+  transition: border-color var(--transition);
+}
+.notes-input:focus { outline: none; border-color: var(--color-primary); }
+.notes-input::placeholder { color: var(--color-text-faint); }
+
+/* Domain score badge */
+.domain-score-row { display: flex; align-items: center; justify-content: flex-end; margin-top: var(--space-3); gap: var(--space-2); }
+.domain-score-badge {
+  font-size: var(--text-sm); font-weight: 700;
+  padding: 3px 10px; border-radius: var(--radius-full);
+  background: var(--color-surface-offset); color: var(--color-text-muted);
+  transition: all var(--transition);
+}
+.domain-score-badge.full { background: var(--color-success-highlight); color: var(--color-success); }
+.domain-score-badge.partial { background: var(--color-warning-highlight); color: var(--color-warning); }
+.domain-score-badge.absent { background: var(--color-error-highlight); color: var(--color-error); }
+
+/* ===================== SCORE PANEL ===================== */
+.score-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-6);
+  margin-top: var(--space-6);
+}
+.score-panel-title { font-size: var(--text-base); font-weight: 700; color: var(--color-text); margin-bottom: var(--space-4); }
+.score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
+.score-cell { text-align: center; }
+.score-cell-label { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: 4px; }
+.score-cell-value { font-size: var(--text-lg); font-weight: 700; color: var(--color-primary); }
+.score-total-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: var(--space-3); border-top: 1px solid var(--color-border);
+  margin-bottom: var(--space-4);
+}
+.score-total-label { font-size: var(--text-base); font-weight: 600; color: var(--color-text); }
+.score-total-value { font-size: var(--text-xl); font-weight: 700; color: var(--color-primary); }
+
+/* Interpretation */
+.interp-box {
+  border-radius: var(--radius-lg); padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-offset);
+}
+.interp-box.present { background: var(--color-success-bg); border-color: var(--color-success-highlight); }
+.interp-box.questionable { background: var(--color-warning-bg); border-color: var(--color-warning-highlight); }
+.interp-box.absent { background: var(--color-error-bg); border-color: var(--color-error-highlight); }
+.interp-label { font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
+.interp-box.present .interp-label { color: var(--color-success); }
+.interp-box.questionable .interp-label { color: var(--color-warning); }
+.interp-box.absent .interp-label { color: var(--color-error); }
+.interp-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin-bottom: 4px; }
+.interp-desc { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.5; }
+
+/* Ranges table */
+.ranges-wrap { margin-bottom: var(--space-4); }
+.ranges-title { font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--color-text-muted); margin-bottom: var(--space-2); }
+.ranges-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.ranges-table th { text-align: left; padding: 5px 10px; color: var(--color-text-muted); border-bottom: 1px solid var(--color-border); font-weight: 600; }
+.ranges-table td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); color: var(--color-text); }
+.ranges-table tr:last-child td { border-bottom: none; }
+.range-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.range-dot.present { background: var(--color-success); }
+.range-dot.questionable { background: var(--color-warning); }
+.range-dot.absent { background: var(--color-error); }
+
+.caveat { font-size: var(--text-sm); color: var(--color-text-faint); line-height: 1.5; padding: var(--space-3) var(--space-4); background: var(--color-surface-2); border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: var(--space-5); }
+
+/* Capacity impression override */
+.impression-wrap { margin-bottom: var(--space-5); }
+.impression-label { font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--color-text-muted); margin-bottom: var(--space-2); }
+.impression-btns { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.impression-btn {
+  padding: 8px 18px; border: 2px solid var(--color-border);
+  border-radius: var(--radius-full); font-size: var(--text-base); font-weight: 600;
+  color: var(--color-text-muted); cursor: pointer; transition: all var(--transition);
+  background: var(--color-bg);
+}
+.impression-btn:hover { border-color: var(--color-primary); color: var(--color-text); }
+.impression-btn.active-present { border-color: var(--color-success); background: var(--color-success-bg); color: var(--color-success); }
+.impression-btn.active-questionable { border-color: var(--color-warning); background: var(--color-warning-bg); color: var(--color-warning); }
+.impression-btn.active-absent { border-color: var(--color-error); background: var(--color-error-bg); color: var(--color-error); }
+
+/* Generated note */
+.note-wrap { margin-top: var(--space-2); }
+.note-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
+.note-label { font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--color-primary); }
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: transparent; border: 1px solid var(--color-border);
+  border-radius: 8px; padding: 5px 12px; font-size: var(--text-sm);
+  color: var(--color-text-muted); cursor: pointer; transition: all var(--transition);
+}
+.copy-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.note-box {
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: var(--space-4);
+  font-size: var(--text-base); color: var(--color-text);
+  white-space: pre-wrap; line-height: 1.7; min-height: 100px;
+}
+
+/* Print / PDF buttons */
+.action-row { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-4); }
+.btn-action {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: 8px 16px;
+  font-size: var(--text-base); font-weight: 500;
+  color: var(--color-text-muted); cursor: pointer; transition: all var(--transition);
+}
+.btn-action:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ===================== FEEDBACK ===================== */
+.feedback-box { margin: 2rem auto 1.5rem; max-width: 640px; background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 12px; padding: 1.25rem 1.5rem; }
+.feedback-box h2 { font-size: 1.05rem; font-weight: 600; color: var(--color-primary); margin: 0 0 1rem; }
+.feedback-form { display: flex; flex-direction: column; gap: .75rem; }
+.feedback-form input, .feedback-form textarea { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: .6rem .85rem; font-size: .9rem; color: var(--color-text); font-family: inherit; }
+.feedback-form textarea { min-height: 80px; resize: vertical; }
+.feedback-submit { align-self: flex-start; background: var(--color-primary); color: #fff; border: none; border-radius: 8px; padding: .5rem 1.25rem; font-size: .9rem; font-weight: 600; cursor: pointer; transition: background .15s; }
+.feedback-submit:hover { background: var(--color-primary-hover); }
+.feedback-success { display: none; margin-top: .75rem; color: var(--color-primary); font-size: .9rem; font-weight: 500; }
+
+
+/* ===================== TEXT ZOOM ===================== */
+[data-zoom='1'] {
+  --text-xs:   clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-sm:   clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-base: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-lg:   clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+}
+
+
+/* ===================== AMA CONTEXT PANEL ===================== */
+.ama-panel {
+  background: var(--color-surface);
+  border: 2px solid var(--color-warning);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-5);
+}
+.ama-panel-header {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.ama-panel-icon {
+  font-size: 1.4rem; line-height: 1;
+}
+.ama-panel-title {
+  font-size: var(--text-base); font-weight: 700; color: var(--color-warning);
+}
+.ama-panel-subtitle {
+  font-size: var(--text-sm); color: var(--color-text-muted); margin-top: 2px;
+}
+.ama-section {
+  margin-bottom: var(--space-5);
+}
+.ama-section:last-child { margin-bottom: 0; }
+.ama-section-label {
+  font-size: var(--text-sm); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--color-text-muted);
+  margin-bottom: var(--space-3); padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+/* Segmented selector */
+.seg-group {
+  display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3);
+}
+.seg-btn {
+  padding: 8px 16px; border: 2px solid var(--color-border);
+  border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 600;
+  color: var(--color-text-muted); cursor: pointer; transition: all var(--transition);
+  background: var(--color-bg); white-space: nowrap;
+}
+.seg-btn:hover { border-color: var(--color-primary); color: var(--color-text); }
+.seg-btn.active { border-color: var(--color-warning); background: var(--color-warning-bg); color: var(--color-warning); }
+/* Checkbox grid */
+.check-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.check-grid.single-col { grid-template-columns: 1fr; }
+@media (max-width: 540px) { .check-grid { grid-template-columns: 1fr; } }
+.check-item {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  padding: 8px 12px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: all var(--transition); background: var(--color-bg);
+  min-height: 44px;
+}
+.check-item:hover { border-color: var(--color-primary); background: var(--color-primary-bg); }
+.check-item.checked { border-color: var(--color-warning); background: var(--color-warning-bg); }
+.check-item input[type=checkbox] { margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--color-warning); cursor: pointer; }
+.check-item label { font-size: var(--text-sm); color: var(--color-text); cursor: pointer; line-height: 1.4; }
+.check-item.checked label { color: var(--color-warning); font-weight: 600; }
+/* Sub-section heading within checks */
+.check-subhead {
+  grid-column: 1 / -1;
+  font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--color-text-faint);
+  padding-top: var(--space-2); padding-bottom: 2px;
+}
+/* Severity selector row */
+.severity-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3); }
+.severity-label { font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600; white-space: nowrap; }
+.severity-opts { display: flex; gap: var(--space-2); }
+.sev-btn {
+  padding: 6px 14px; border: 2px solid var(--color-border);
+  border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 600;
+  color: var(--color-text-muted); cursor: pointer; transition: all var(--transition);
+  background: var(--color-bg);
+}
+.sev-btn:hover { border-color: var(--color-primary); }
+.sev-btn.active-mild { border-color: var(--color-success); background: var(--color-success-bg); color: var(--color-success); }
+.sev-btn.active-moderate { border-color: var(--color-warning); background: var(--color-warning-bg); color: var(--color-warning); }
+.sev-btn.active-severe { border-color: var(--color-error); background: var(--color-error-bg); color: var(--color-error); }
+/* Score input */
+.score-input-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.score-input-label { font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600; }
+.score-input-field {
+  width: 72px; padding: 6px 10px; text-align: center;
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); color: var(--color-text);
+  font: inherit; font-size: var(--text-sm); font-weight: 700;
+}
+.score-input-field:focus { outline: none; border-color: var(--color-primary); }
+/* AMA topbar button */
+.ama-btn {
+  font-size: var(--text-sm); font-weight: 700; padding: 5px 12px;
+  border: 2px solid var(--color-border); border-radius: var(--radius-full);
+  color: var(--color-text-muted); transition: all var(--transition);
+  background: var(--color-surface-2); white-space: nowrap;
+}
+.ama-btn:hover { border-color: var(--color-warning); color: var(--color-warning); }
+.ama-btn.active {
+  border-color: var(--color-warning); background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+/* Hidden substance sections */
+.subst-section { display: none; }
+.subst-section.visible { display: block; }
+/* Substance color accents */
+:root {
+  --subst-alc:   #4f8ed4;
+  --subst-opi:   #d46b6b;
+  --subst-benzo: #9b7fd4;
+  --subst-stim:  #d4944f;
+  --subst-other: var(--color-primary);
+}
+.subst-section.visible .ama-section { border-left: 3px solid var(--subst-color, var(--color-border)); padding-left: var(--space-4); }
+#sect-alc.visible .ama-section   { --subst-color: var(--subst-alc); }
+#sect-opi.visible .ama-section   { --subst-color: var(--subst-opi); }
+#sect-benzo.visible .ama-section { --subst-color: var(--subst-benzo); }
+#sect-stim.visible .ama-section  { --subst-color: var(--subst-stim); }
+#sect-other.visible .ama-section { --subst-color: var(--subst-other); }
+/* Section label inherits accent color */
+#sect-alc   .ama-section-label { color: var(--subst-alc); }
+#sect-opi   .ama-section-label { color: var(--subst-opi); }
+#sect-benzo .ama-section-label { color: var(--subst-benzo); }
+#sect-stim  .ama-section-label { color: var(--subst-stim); }
+#sect-other .ama-section-label { color: var(--subst-other); }
+/* Substance toggle buttons — colored when active */
+#substAlc.active    { border-color: var(--subst-alc)!important;   background: rgba(79,142,212,.15)!important;  color: var(--subst-alc)!important; }
+#substOpi.active    { border-color: var(--subst-opi)!important;   background: rgba(212,107,107,.15)!important; color: var(--subst-opi)!important; }
+#substBenzo.active  { border-color: var(--subst-benzo)!important; background: rgba(155,127,212,.15)!important; color: var(--subst-benzo)!important; }
+#substStim.active   { border-color: var(--subst-stim)!important;  background: rgba(212,148,79,.15)!important;  color: var(--subst-stim)!important; }
+#substOther.active  { border-color: var(--color-primary)!important; background: rgba(79,152,163,.15)!important; color: var(--color-primary)!important; }
+/* Print: include AMA panel */
+/* ===================== PRINT ===================== */
+@media print {
+  .topbar, .mode-toggle-wrap, .action-row, .feedback-box,
+  .copy-btn, .reset-btn, .theme-btn, .prompts-box, .ama-btn,
+  .seg-group, .severity-row, .score-input-row, .check-item input,
+  .rating-group, .notes-input, .impression-btns { display: none !important; }
+  .ama-panel { border-color: #999; }
+  .check-item.checked { border-color: #666; background: #f5f5f5; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .domain-card, .score-panel, .decision-card { border: 1px solid #ccc; break-inside: avoid; margin-bottom: 12pt; }
+  .note-box { border: 1px solid #ccc; background: #f9f9f9; }
+}
+
+@media (max-width: 600px) {
+  .main { padding: var(--space-4) var(--space-4) var(--space-10); }
+  .score-grid { grid-template-columns: repeat(2, 1fr); }
+  .domain-card, .score-panel, .decision-card { padding: var(--space-4); }
+  .mode-btn { padding: 7px 14px; font-size: var(--text-sm); }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-title">Decisional Capacity Assessment</div>
+    <div class="breadcrumb">
+      <a href="index.html">Adult Tools</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>Capacity</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="ama-btn" id="amaBtn" onclick="toggleAMA()">AMA</button>
+    <button class="zoom-btn" id="zoomBtn" onclick="toggleZoom()" aria-label="Increase text size" title="Increase text size">A+</button>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+    <button class="theme-btn" id="themeBtn" aria-label="Toggle theme"></button>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- Mode toggle -->
+  <div class="mode-toggle-wrap">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnSimple" onclick="setMode('simple')">Simple</button>
+      <button class="mode-btn" id="btnDetailed" onclick="setMode('detailed')">Detailed (MacCAT-T)</button>
+    </div>
+  </div>
+
+  <!-- Decision being evaluated -->
+  <div class="decision-card">
+    <label for="decisionInput">Decision Being Evaluated</label>
+    <div class="field-hint">Describe the specific medical or treatment decision under assessment.</div>
+    <textarea class="decision-input" id="decisionInput" rows="2"
+      placeholder="e.g., Consent to initiation of buprenorphine/naloxone for opioid use disorder"
+      oninput="generateNote()"></textarea>
+  </div>
+
+
+  <!-- ── AMA Context Panel ── -->
+  <div id="amaPanel" style="display:none">
+    <div class="ama-panel">
+      <div class="ama-panel-header">
+        <div class="ama-panel-icon">⚠️</div>
+        <div>
+          <div class="ama-panel-title">AMA Discharge Context</div>
+          <div class="ama-panel-subtitle">Risk factors and clinical context for against-medical-advice discharge</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Facility type -->
+      <div class="ama-section">
+        <div class="ama-section-label">Facility Type</div>
+        <div class="seg-group">
+          <button class="seg-btn" id="facDetox" onclick="setFacility('detox')">Detox / Medically Managed Withdrawal</button>
+          <button class="seg-btn" id="facRehab" onclick="setFacility('rehab')">Residential Rehab / Post-Detox</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Substance(s) -->
+      <div class="ama-section">
+        <div class="ama-section-label">Primary Substance(s)</div>
+        <div class="seg-group" id="substBtns">
+          <button class="seg-btn" id="substAlc"    onclick="toggleSubst('alc')">Alcohol</button>
+          <button class="seg-btn" id="substOpi"    onclick="toggleSubst('opi')">Opioids</button>
+          <button class="seg-btn" id="substBenzo"  onclick="toggleSubst('benzo')">Benzodiazepines</button>
+          <button class="seg-btn" id="substStim"   onclick="toggleSubst('stim')">Stimulants</button>
+          <button class="seg-btn" id="substOther"  onclick="toggleSubst('other')">Other</button>
+        </div>
+      </div>
+
+      <!-- ALCOHOL ─────────────────────────────────── -->
+      <div class="subst-section" id="sect-alc">
+        <div class="ama-section">
+          <div class="ama-section-label">Alcohol — Withdrawal Severity</div>
+          <div class="severity-row">
+            <span class="severity-label">Clinical severity:</span>
+            <div class="severity-opts">
+              <button class="sev-btn" id="alc-sev-mild"     onclick="setSeverity('alc','mild')">Mild</button>
+              <button class="sev-btn" id="alc-sev-moderate" onclick="setSeverity('alc','moderate')">Moderate</button>
+              <button class="sev-btn" id="alc-sev-severe"   onclick="setSeverity('alc','severe')">Severe</button>
+            </div>
+          </div>
+          <div class="score-input-row">
+            <span class="score-input-label">CIWA-Ar Score (optional):</span>
+            <input class="score-input-field" type="number" id="alc-ciwa" min="0" max="67" placeholder="—" oninput="generateNote()">
+          </div>
+          <div class="check-grid">
+            <div class="check-subhead">Counseled — Withdrawal Risks</div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-risk-worsen')"><input type="checkbox" id="alc-risk-worsen"><label for="alc-risk-worsen">Symptoms expected to worsen after leaving</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-risk-seizure')"><input type="checkbox" id="alc-risk-seizure"><label for="alc-risk-seizure">Risk of withdrawal seizure</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-risk-dt')"><input type="checkbox" id="alc-risk-dt"><label for="alc-risk-dt">Risk of delirium tremens (DTs)</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-risk-wernicke')"><input type="checkbox" id="alc-risk-wernicke"><label for="alc-risk-wernicke">Risk of Wernicke's encephalopathy</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-risk-death')"><input type="checkbox" id="alc-risk-death"><label for="alc-risk-death">Risk of death from untreated withdrawal</label></div>
+            <div class="check-subhead">Patient History</div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-hx-seizure')"><input type="checkbox" id="alc-hx-seizure"><label for="alc-hx-seizure">Prior withdrawal seizure</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-hx-dt')"><input type="checkbox" id="alc-hx-dt"><label for="alc-hx-dt">Prior delirium tremens</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-hx-complicated')"><input type="checkbox" id="alc-hx-complicated"><label for="alc-hx-complicated">Prior complicated detox</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-hx-ama')"><input type="checkbox" id="alc-hx-ama"><label for="alc-hx-ama">Prior AMA discharge during detox</label></div>
+            <div class="check-subhead">Current Symptoms at Time of Assessment</div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-sx-tremor')"><input type="checkbox" id="alc-sx-tremor"><label for="alc-sx-tremor">Tremor observed</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-sx-diaphoresis')"><input type="checkbox" id="alc-sx-diaphoresis"><label for="alc-sx-diaphoresis">Diaphoresis observed</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-sx-confusion')"><input type="checkbox" id="alc-sx-confusion"><label for="alc-sx-confusion">Confusion / disorientation noted</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'alc-sx-agitation')"><input type="checkbox" id="alc-sx-agitation"><label for="alc-sx-agitation">Psychomotor agitation</label></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPIOIDS ─────────────────────────────────── -->
+      <div class="subst-section" id="sect-opi">
+        <div class="ama-section">
+          <div class="ama-section-label">Opioids — Withdrawal Severity</div>
+          <div class="severity-row">
+            <span class="severity-label">Clinical severity:</span>
+            <div class="severity-opts">
+              <button class="sev-btn" id="opi-sev-mild"     onclick="setSeverity('opi','mild')">Mild</button>
+              <button class="sev-btn" id="opi-sev-moderate" onclick="setSeverity('opi','moderate')">Moderate</button>
+              <button class="sev-btn" id="opi-sev-severe"   onclick="setSeverity('opi','severe')">Severe</button>
+            </div>
+          </div>
+          <div class="score-input-row">
+            <span class="score-input-label">COWS Score (optional):</span>
+            <input class="score-input-field" type="number" id="opi-cows" min="0" max="48" placeholder="—" oninput="generateNote()">
+          </div>
+          <div class="check-grid">
+            <div class="check-subhead">Counseled — Withdrawal &amp; Relapse Risks</div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-risk-worsen')"><input type="checkbox" id="opi-risk-worsen"><label for="opi-risk-worsen">Symptoms expected to worsen after leaving</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-risk-tolerance')"><input type="checkbox" id="opi-risk-tolerance"><label for="opi-risk-tolerance">Loss of tolerance increases overdose risk</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-risk-fentanyl')"><input type="checkbox" id="opi-risk-fentanyl"><label for="opi-risk-fentanyl">Fentanyl exposure risk in local supply</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-risk-od-death')"><input type="checkbox" id="opi-risk-od-death"><label for="opi-risk-od-death">Risk of overdose death</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-risk-moud')"><input type="checkbox" id="opi-risk-moud"><label for="opi-risk-moud">MOUD (buprenorphine/methadone) discussed</label></div>
+            <div class="check-subhead">Patient History</div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-hx-od')"><input type="checkbox" id="opi-hx-od"><label for="opi-hx-od">Prior overdose</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-hx-multi-od')"><input type="checkbox" id="opi-hx-multi-od"><label for="opi-hx-multi-od">Multiple prior overdoses</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-hx-recent-od')"><input type="checkbox" id="opi-hx-recent-od"><label for="opi-hx-recent-od">Recent overdose (within 90 days)</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-hx-ama')"><input type="checkbox" id="opi-hx-ama"><label for="opi-hx-ama">Prior AMA discharge</label></div>
+            <div class="check-subhead">Naloxone</div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-nx-accepted')"><input type="checkbox" id="opi-nx-accepted"><label for="opi-nx-accepted">Naloxone offered and accepted</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-nx-declined')"><input type="checkbox" id="opi-nx-declined"><label for="opi-nx-declined">Naloxone offered and declined</label></div>
+            <div class="check-subhead">Current Symptoms at Time of Assessment</div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-sx-distress')"><input type="checkbox" id="opi-sx-distress"><label for="opi-sx-distress">Severe withdrawal distress noted</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'opi-sx-craving')"><input type="checkbox" id="opi-sx-craving"><label for="opi-sx-craving">Patient endorses strong cravings</label></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BENZODIAZEPINES ─────────────────────────── -->
+      <div class="subst-section" id="sect-benzo">
+        <div class="ama-section">
+          <div class="ama-section-label">Benzodiazepines — Withdrawal Severity</div>
+          <div class="severity-row">
+            <span class="severity-label">Clinical severity:</span>
+            <div class="severity-opts">
+              <button class="sev-btn" id="benzo-sev-mild"     onclick="setSeverity('benzo','mild')">Mild</button>
+              <button class="sev-btn" id="benzo-sev-moderate" onclick="setSeverity('benzo','moderate')">Moderate</button>
+              <button class="sev-btn" id="benzo-sev-severe"   onclick="setSeverity('benzo','severe')">Severe</button>
+            </div>
+          </div>
+          <div class="check-grid">
+            <div class="check-subhead">Counseled — Withdrawal Risks</div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-risk-worsen')"><input type="checkbox" id="benzo-risk-worsen"><label for="benzo-risk-worsen">Symptoms expected to worsen after leaving</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-risk-seizure')"><input type="checkbox" id="benzo-risk-seizure"><label for="benzo-risk-seizure">Risk of withdrawal seizure</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-risk-delirium')"><input type="checkbox" id="benzo-risk-delirium"><label for="benzo-risk-delirium">Risk of withdrawal delirium</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-risk-death')"><input type="checkbox" id="benzo-risk-death"><label for="benzo-risk-death">Risk of death from untreated withdrawal</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-risk-coalc')"><input type="checkbox" id="benzo-risk-coalc"><label for="benzo-risk-coalc">Co-occurring alcohol use (additive risk)</label></div>
+            <div class="check-subhead">Patient History</div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-hx-seizure')"><input type="checkbox" id="benzo-hx-seizure"><label for="benzo-hx-seizure">Prior benzo withdrawal seizure</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-hx-complicated')"><input type="checkbox" id="benzo-hx-complicated"><label for="benzo-hx-complicated">Prior complicated withdrawal</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-hx-ama')"><input type="checkbox" id="benzo-hx-ama"><label for="benzo-hx-ama">Prior AMA discharge during detox</label></div>
+            <div class="check-subhead">Current Symptoms at Time of Assessment</div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-sx-tremor')"><input type="checkbox" id="benzo-sx-tremor"><label for="benzo-sx-tremor">Tremor observed</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-sx-anxiety')"><input type="checkbox" id="benzo-sx-anxiety"><label for="benzo-sx-anxiety">Marked anxiety / autonomic arousal</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'benzo-sx-confusion')"><input type="checkbox" id="benzo-sx-confusion"><label for="benzo-sx-confusion">Confusion / disorientation noted</label></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STIMULANTS ──────────────────────────────── -->
+      <div class="subst-section" id="sect-stim">
+        <div class="ama-section">
+          <div class="ama-section-label">Stimulants (Methamphetamine / Cocaine)</div>
+          <div class="check-grid">
+            <div class="check-subhead">Counseled — Risks</div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-risk-psych')"><input type="checkbox" id="stim-risk-psych"><label for="stim-risk-psych">Risk of psychiatric decompensation</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-risk-psychosis')"><input type="checkbox" id="stim-risk-psychosis"><label for="stim-risk-psychosis">Risk of stimulant-induced psychosis</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-risk-environment')"><input type="checkbox" id="stim-risk-environment"><label for="stim-risk-environment">Return to high-risk use environment</label></div>
+            <div class="check-subhead">Patient History</div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-hx-psychosis')"><input type="checkbox" id="stim-hx-psychosis"><label for="stim-hx-psychosis">Prior stimulant-induced psychosis</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-hx-psych-hosp')"><input type="checkbox" id="stim-hx-psych-hosp"><label for="stim-hx-psych-hosp">Prior psychiatric hospitalization related to stimulant use</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-hx-ama')"><input type="checkbox" id="stim-hx-ama"><label for="stim-hx-ama">Prior AMA discharge</label></div>
+            <div class="check-subhead">Current Mental Status at Time of Assessment</div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-sx-paranoia')"><input type="checkbox" id="stim-sx-paranoia"><label for="stim-sx-paranoia">Paranoia or psychosis currently present</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-sx-dysphoria')"><input type="checkbox" id="stim-sx-dysphoria"><label for="stim-sx-dysphoria">Marked dysphoria / crash state</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'stim-sx-impulsive')"><input type="checkbox" id="stim-sx-impulsive"><label for="stim-sx-impulsive">Impulsive decision-making noted</label></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OTHER ───────────────────────────────────── -->
+      <div class="subst-section" id="sect-other">
+        <div class="ama-section">
+          <div class="ama-section-label">Other Substance</div>
+          <div style="margin-bottom:var(--space-3)">
+            <input class="decision-input" type="text" id="other-subst-name" placeholder="Specify substance…" style="max-width:320px" oninput="generateNote()">
+          </div>
+          <div class="check-grid">
+            <div class="check-subhead">Counseled — Risks</div>
+            <div class="check-item" onclick="toggleCheck(this,'other-risk-incomplete')"><input type="checkbox" id="other-risk-incomplete"><label for="other-risk-incomplete">Incomplete treatment at time of AMA</label></div>
+            <div class="check-item" onclick="toggleCheck(this,'other-risk-environment')"><input type="checkbox" id="other-risk-environment"><label for="other-risk-environment">Return to high-risk use environment</label></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENERAL — all substances ────────────────── -->
+      <div class="ama-section" id="sect-general" style="display:none">
+        <div class="ama-section-label">General Risk &amp; Disposition</div>
+        <div class="check-grid">
+          <div class="check-subhead">Incomplete Discharge Planning</div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-no-housing')"><input type="checkbox" id="gen-no-housing"><label for="gen-no-housing">No identified housing / unstable housing</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-no-followup')"><input type="checkbox" id="gen-no-followup"><label for="gen-no-followup">No outpatient follow-up arranged</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-no-transport')"><input type="checkbox" id="gen-no-transport"><label for="gen-no-transport">No transportation from facility</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-no-support')"><input type="checkbox" id="gen-no-support"><label for="gen-no-support">No emergency contact / support person available</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-no-rx')"><input type="checkbox" id="gen-no-rx"><label for="gen-no-rx">No discharge prescriptions provided</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-step-offered')"><input type="checkbox" id="gen-step-offered"><label for="gen-step-offered">Step-down level of care offered</label></div>
+          <div class="check-subhead">Patient Engagement &amp; AMA Form</div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-risks-verbal')"><input type="checkbox" id="gen-risks-verbal"><label for="gen-risks-verbal">Risks explained verbally</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-risks-written')"><input type="checkbox" id="gen-risks-written"><label for="gen-risks-written">Risks explained in writing</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-ama-signed')"><input type="checkbox" id="gen-ama-signed"><label for="gen-ama-signed">AMA form offered and signed</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-ama-refused')"><input type="checkbox" id="gen-ama-refused"><label for="gen-ama-refused">AMA form offered, patient refused to sign</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-coercion')"><input type="checkbox" id="gen-coercion"><label for="gen-coercion">Possible coercion / external pressure noted</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-si')"><input type="checkbox" id="gen-si"><label for="gen-si">Active suicidal ideation present</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-prior-ama')"><input type="checkbox" id="gen-prior-ama"><label for="gen-prior-ama">Pattern of prior AMA discharges</label></div>
+          <div class="check-item" onclick="toggleCheck(this,'gen-withdrawal-capacity')"><input type="checkbox" id="gen-withdrawal-capacity"><label for="gen-withdrawal-capacity">Active withdrawal may be impairing cognitive function at time of assessment</label></div>
+        </div>
+      </div>
+
+    </div><!-- /.ama-panel -->
+  </div><!-- /#amaPanel -->
+
+  <!-- Domain cards injected here -->
+  <div id="domainsContainer"></div>
+
+  <!-- Score panel -->
+  <div class="score-panel" id="scorePanel">
+    <div class="score-panel-title">Assessment Summary</div>
+
+    <div class="score-grid" id="scoreGrid"></div>
+
+    <div class="score-total-row">
+      <div class="score-total-label">Total Score</div>
+      <div class="score-total-value" id="totalScoreDisplay">— / —</div>
+    </div>
+
+    <!-- Interpretation ranges -->
+    <div class="ranges-wrap" id="rangesWrap"></div>
+
+    <div class="caveat" id="caveatBox"></div>
+
+    <!-- Capacity impression -->
+    <div class="impression-wrap">
+      <div class="impression-label">Capacity Impression <span style="font-weight:400;text-transform:none;letter-spacing:0">(auto-suggested — override as needed)</span></div>
+      <div class="impression-btns">
+        <button class="impression-btn" id="impPresent" onclick="setImpression('present')">Capacity Present</button>
+        <button class="impression-btn" id="impQuestionable" onclick="setImpression('questionable')">Capacity Questionable</button>
+        <button class="impression-btn" id="impAbsent" onclick="setImpression('absent')">Capacity Absent</button>
+      </div>
+    </div>
+
+    <!-- Interpretation box -->
+    <div class="interp-box" id="interpBox" style="display:none"></div>
+
+    <!-- Generated note -->
+    <div class="note-wrap">
+      <div class="note-header">
+        <div class="note-label">Generated Clinical Note</div>
+        <button class="copy-btn" onclick="copyNote()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Note
+        </button>
+      </div>
+      <div class="note-box" id="generatedNote">(Complete the assessment above to generate a clinical note.)</div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-action" id="btnPrint" onclick="window.print()" disabled>
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print
+      </button>
+      <button class="btn-action" id="btnPDF" onclick="savePDF()" disabled>
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Save as PDF
+      </button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ── Feedback Card ── -->
+<div class="feedback-box">
+  <h2>Suggestions &amp; Feedback</h2>
+  <form class="feedback-form" onsubmit="submitFeedback(event)">
+    <input type="hidden" name="_subject" value="Feedback: Decisional Capacity Tool">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="text" name="name" placeholder="Your Name" required>
+    <textarea name="comment" placeholder="Comment or suggestion…" required></textarea>
+    <button type="submit" class="feedback-submit">Submit</button>
+  </form>
+  <div class="feedback-success" id="feedbackSuccess">Thank you — feedback received.</div>
+</div>
+
+<script>
+// ===================== DATA =====================
+
+var MODE = 'simple'; // 'simple' | 'detailed'
+var _impression = null; // null | 'present' | 'questionable' | 'absent'
+
+// Simple mode: 1 rating per domain, max score = 8
+var SIMPLE_DOMAINS = [
+  {
+    id: 'understanding',
+    title: 'Understanding',
+    number: 1,
+    desc: 'Patient understands the disclosed information about their condition, proposed treatment, alternatives, and associated risks and benefits.',
+    prompts: [
+      'Can you tell me in your own words what your diagnosis is?',
+      'What is the treatment I am recommending, and what would it involve?',
+      'What are the risks and benefits of this treatment that we discussed?',
+      'What happens if you choose not to receive this treatment?'
+    ],
+    anchors: ['No meaningful understanding demonstrated', 'Partial or inconsistent understanding; gaps in key information', 'Adequate understanding of diagnosis, treatment, risks, and alternatives']
+  },
+  {
+    id: 'appreciation',
+    title: 'Appreciation',
+    number: 2,
+    desc: 'Patient appreciates that the information applies to their own situation — not just in the abstract, but as it pertains to them personally.',
+    prompts: [
+      'Do you believe you have this condition?',
+      'Do you believe this treatment could help you specifically?',
+      'What do you think will happen to you if you accept this treatment? If you refuse?'
+    ],
+    anchors: ['Denies having the condition or denies the treatment could affect them; unable to connect information to personal situation', 'Partial acknowledgment; minimizes relevance to own situation or shows inconsistent insight', 'Clearly understands and acknowledges the personal relevance of the diagnosis and proposed treatment']
+  },
+  {
+    id: 'reasoning',
+    title: 'Reasoning',
+    number: 3,
+    desc: 'Patient can weigh options against each other, think through consequences, and engage in a rational decision-making process.',
+    prompts: [
+      'How did you arrive at your decision?',
+      'What factors are most important to you in making this decision?',
+      'What do you see as the advantages and disadvantages of each option?',
+      'How does your decision fit with your overall goals for your health?'
+    ],
+    anchors: ['Unable to compare options, weigh consequences, or provide any rational basis for the decision', 'Some reasoning present but incomplete; illogical gaps or inability to weigh key factors', 'Demonstrates sequential, logical reasoning; able to compare options and articulate a basis for the decision']
+  },
+  {
+    id: 'choice',
+    title: 'Expressing a Choice',
+    number: 4,
+    desc: 'Patient can communicate a clear, consistent decision when asked.',
+    prompts: [
+      'Have you made a decision about this treatment?',
+      'What is your decision?',
+      'Are you able to tell me again what you have decided?'
+    ],
+    anchors: ['Unable to state a decision, or decision changes incoherently within the interview', 'States a decision but is inconsistent or requires excessive prompting', 'Clearly and consistently communicates a decision throughout the interview']
+  }
+];
+
+// Detailed mode: sub-items per domain (MacCAT-T structure)
+var DETAILED_DOMAINS = [
+  {
+    id: 'understanding',
+    title: 'Understanding',
+    number: 1,
+    desc: 'Rated across three disclosure components: diagnosis, treatment, and risks/benefits.',
+    maxScore: 6,
+    subitems: [
+      {
+        id: 'u1', label: 'Understanding of Disorder',
+        prompts: ['Can you tell me in your own words what condition or problem you have?', 'What do you understand about your diagnosis?'],
+        anchors: ['No understanding of disorder', 'Partial understanding; missing key elements', 'Adequate understanding of disorder']
+      },
+      {
+        id: 'u2', label: 'Understanding of Treatment',
+        prompts: ['What is the treatment being recommended?', 'What would it involve for you?'],
+        anchors: ['No understanding of treatment', 'Partial understanding of treatment', 'Adequate understanding of treatment']
+      },
+      {
+        id: 'u3', label: 'Understanding of Risks/Benefits and Alternatives',
+        prompts: ['What are the risks and benefits of this treatment?', 'What other options are available to you?', 'What happens if you choose not to have any treatment?'],
+        anchors: ['No understanding of risks, benefits, or alternatives', 'Partial understanding; cannot articulate key risks or alternatives', 'Adequate understanding of risks, benefits, and at least one alternative']
+      }
+    ]
+  },
+  {
+    id: 'appreciation',
+    title: 'Appreciation',
+    number: 2,
+    desc: 'Rated across two components: appreciation of the disorder and appreciation of the treatment effect.',
+    maxScore: 4,
+    subitems: [
+      {
+        id: 'a1', label: 'Appreciation of Disorder',
+        prompts: ['Do you believe you have this condition?', 'Why do you think I have recommended this treatment?'],
+        anchors: ['Denies having the disorder entirely', 'Acknowledges disorder but minimizes its relevance to their situation', 'Clearly acknowledges disorder and its personal significance']
+      },
+      {
+        id: 'a2', label: 'Appreciation of Treatment',
+        prompts: ['Do you believe this treatment could help you?', 'What do you think will happen to you if you accept the treatment? If you refuse?'],
+        anchors: ['Denies treatment could affect them; reasoning clearly distorted', 'Partial acknowledgment; inconsistent belief in treatment relevance', 'Clearly acknowledges potential effects of treatment on their own situation']
+      }
+    ]
+  },
+  {
+    id: 'reasoning',
+    title: 'Reasoning',
+    number: 3,
+    desc: 'Rated across three reasoning components: consequential thinking, comparative thinking, and generating consequences.',
+    maxScore: 6,
+    subitems: [
+      {
+        id: 'r1', label: 'Consequential Thinking',
+        prompts: ['What do you think will happen as a result of your decision?', 'How will this decision affect your daily life?'],
+        anchors: ['Unable to identify any consequences of the decision', 'Identifies some consequences but in a limited or illogical way', 'Logically and consistently identifies meaningful consequences']
+      },
+      {
+        id: 'r2', label: 'Comparative Thinking',
+        prompts: ['How did you compare your options when making this decision?', 'Why did you choose this option over the others?'],
+        anchors: ['Unable to compare options at all', 'Makes some comparison but missing key distinctions', 'Demonstrates clear comparison between options with logical differentiation']
+      },
+      {
+        id: 'r3', label: 'Generating Consequences',
+        prompts: ['How does this decision fit with your values and long-term goals?', 'What factors were most important to you?'],
+        anchors: ['Cannot generate relevant reasons or basis for decision', 'Generates some reasons but reasoning is incomplete or tangential', 'Generates coherent, relevant reasons consistent with their stated values and goals']
+      }
+    ]
+  },
+  {
+    id: 'choice',
+    title: 'Expressing a Choice',
+    number: 4,
+    desc: 'A single item — whether the patient can consistently state and maintain a decision.',
+    maxScore: 2,
+    subitems: [
+      {
+        id: 'c1', label: 'Ability to Express and Maintain a Choice',
+        prompts: ['Have you made a decision about this treatment?', 'What is your decision?', 'Can you tell me your decision again?'],
+        anchors: ['Unable to state a decision, or decision changes incoherently without new information', 'States a decision inconsistently or requires repeated prompting', 'Clearly and consistently states the same decision throughout the interview']
+      }
+    ]
+  }
+];
+
+// Scores storage
+// Simple: scores[domainId] = 0|1|2|null
+// Detailed: scores[subitemId] = 0|1|2|null
+var scores = {};
+
+// ===================== MODE =====================
+function setMode(mode) {
+  MODE = mode;
+  document.getElementById('btnSimple').classList.toggle('active', mode === 'simple');
+  document.getElementById('btnDetailed').classList.toggle('active', mode === 'detailed');
+  // Clear ratings but keep notes and decision text
+  scores = {};
+  renderDomains();
+  updateScore();
+  generateNote();
+}
+
+// ===================== RENDER =====================
+function renderDomains() {
+  var container = document.getElementById('domainsContainer');
+  container.innerHTML = '';
+
+  var domains = MODE === 'simple' ? SIMPLE_DOMAINS : DETAILED_DOMAINS;
+
+  domains.forEach(function(d) {
+    var card = document.createElement('div');
+    card.className = 'domain-card';
+    card.id = 'domain-' + d.id;
+
+    if (MODE === 'simple') {
+      card.innerHTML = renderSimpleDomain(d);
+    } else {
+      card.innerHTML = renderDetailedDomain(d);
+    }
+    container.appendChild(card);
+  });
+}
+
+function renderSimpleDomain(d) {
+  return '<div class="domain-header">' +
+    '<span class="domain-number">' + d.number + '</span>' +
+    '<span class="domain-title">' + d.title + '</span>' +
+    '<div class="domain-desc">' + d.desc + '</div>' +
+    '</div>' +
+    '<div class="prompts-box">' +
+    '<div class="prompts-label">Suggested Prompts</div>' +
+    d.prompts.map(function(p) { return '<div class="prompt-item">' + p + '</div>'; }).join('') +
+    '</div>' +
+    '<div class="rating-group">' +
+    [0,1,2].map(function(v) {
+      return '<button class="rating-btn" id="rb-' + d.id + '-' + v + '" onclick="setScore(\'' + d.id + '\',' + v + ')">' +
+        '<span class="rb-score">' + v + '</span>' +
+        '<span class="rb-label">' + d.anchors[v] + '</span>' +
+        '</button>';
+    }).join('') +
+    '</div>' +
+    '<div class="notes-label">Clinical Observations / Notes</div>' +
+    '<textarea class="notes-input" id="notes-' + d.id + '" placeholder="Document specific responses, observations, or reasoning here…" oninput="generateNote()"></textarea>' +
+    '<div class="domain-score-row">' +
+    '<div class="domain-score-badge" id="badge-' + d.id + '">— / 2</div>' +
+    '</div>';
+}
+
+function renderDetailedDomain(d) {
+  var html = '<div class="domain-header">' +
+    '<span class="domain-number">' + d.number + '</span>' +
+    '<span class="domain-title">' + d.title + '</span>' +
+    '<div class="domain-desc">' + d.desc + '</div>' +
+    '</div>';
+
+  d.subitems.forEach(function(si) {
+    html += '<div class="subitem">' +
+      '<div class="subitem-label">' + si.label + '</div>' +
+      '<div class="prompts-box">' +
+      '<div class="prompts-label">Suggested Prompts</div>' +
+      si.prompts.map(function(p) { return '<div class="prompt-item">' + p + '</div>'; }).join('') +
+      '</div>' +
+      '<div class="rating-group">' +
+      [0,1,2].map(function(v) {
+        return '<button class="rating-btn" id="rb-' + si.id + '-' + v + '" onclick="setScore(\'' + si.id + '\',' + v + ')">' +
+          '<span class="rb-score">' + v + '</span>' +
+          '<span class="rb-label">' + si.anchors[v] + '</span>' +
+          '</button>';
+      }).join('') +
+      '</div>' +
+      '</div>';
+  });
+
+  html += '<div class="notes-label">Clinical Observations / Notes</div>' +
+    '<textarea class="notes-input" id="notes-' + d.id + '" placeholder="Document specific responses, observations, or reasoning here…" oninput="generateNote()"></textarea>' +
+    '<div class="domain-score-row">' +
+    '<div class="domain-score-badge" id="badge-' + d.id + '">— / ' + d.maxScore + '</div>' +
+    '</div>';
+
+  return html;
+}
+
+// ===================== SCORING =====================
+function setScore(itemId, val) {
+  scores[itemId] = val;
+  // Update button states
+  [0,1,2].forEach(function(v) {
+    var btn = document.getElementById('rb-' + itemId + '-' + v);
+    if (btn) btn.classList.toggle('selected', v === val);
+  });
+  updateScore();
+  generateNote();
+}
+
+function getDomainScore(d) {
+  if (MODE === 'simple') {
+    var s = scores[d.id];
+    return s === undefined || s === null ? null : s;
+  } else {
+    var total = 0, allAnswered = true;
+    d.subitems.forEach(function(si) {
+      var s = scores[si.id];
+      if (s === undefined || s === null) { allAnswered = false; }
+      else total += s;
+    });
+    return allAnswered ? total : null;
+  }
+}
+
+function getMaxDomainScore(d) {
+  return MODE === 'simple' ? 2 : d.maxScore;
+}
+
+function updateScore() {
+  var domains = MODE === 'simple' ? SIMPLE_DOMAINS : DETAILED_DOMAINS;
+  var maxTotal = MODE === 'simple' ? 8 : 20;
+  var runningTotal = 0;
+  var allAnswered = true;
+
+  // Score grid
+  var gridHtml = '';
+  domains.forEach(function(d) {
+    var ds = getDomainScore(d);
+    var max = getMaxDomainScore(d);
+    var display = ds === null ? '—' : ds;
+    gridHtml += '<div class="score-cell">' +
+      '<div class="score-cell-label">' + d.title + '</div>' +
+      '<div class="score-cell-value">' + display + '<span style="font-size:var(--text-xs);color:var(--color-text-muted);font-weight:400"> /' + max + '</span></div>' +
+      '</div>';
+
+    // Update badge
+    var badge = document.getElementById('badge-' + d.id);
+    if (badge) {
+      if (ds === null) {
+        badge.textContent = '— / ' + max;
+        badge.className = 'domain-score-badge';
+      } else {
+        badge.textContent = ds + ' / ' + max;
+        var pct = ds / max;
+        badge.className = 'domain-score-badge ' + (pct >= 0.75 ? 'full' : pct >= 0.4 ? 'partial' : 'absent');
+      }
+    }
+
+    if (ds === null) allAnswered = false;
+    else runningTotal += ds;
+  });
+
+  document.getElementById('scoreGrid').innerHTML = gridHtml;
+  document.getElementById('totalScoreDisplay').textContent = allAnswered ? (runningTotal + ' / ' + maxTotal) : '— / ' + maxTotal;
+
+  // Ranges
+  renderRanges(runningTotal, maxTotal, allAnswered);
+
+  // Auto-suggest impression if not manually set
+  if (allAnswered && _impression === null) {
+    var suggested = suggestImpression(runningTotal, maxTotal);
+    highlightImpression(suggested, true);
+  }
+
+  // Print/PDF buttons
+  var complete = allAnswered;
+  document.getElementById('btnPrint').disabled = !complete;
+  document.getElementById('btnPDF').disabled = !complete;
+}
+
+function suggestImpression(total, max) {
+  var pct = total / max;
+  if (pct >= 0.75) return 'present';
+  if (pct >= 0.4) return 'questionable';
+  return 'absent';
+}
+
+function renderRanges(total, max, allAnswered) {
+  var rangesWrap = document.getElementById('rangesWrap');
+  var caveatBox = document.getElementById('caveatBox');
+
+  if (MODE === 'simple') {
+    rangesWrap.innerHTML = '<div class="ranges-title">Score Interpretation (Simple Mode)</div>' +
+      '<table class="ranges-table">' +
+      '<tr><th>Score</th><th>Interpretation</th></tr>' +
+      '<tr><td><span class="range-dot present"></span>6 – 8</td><td>Capacity likely present</td></tr>' +
+      '<tr><td><span class="range-dot questionable"></span>3 – 5</td><td>Capacity questionable — further evaluation warranted</td></tr>' +
+      '<tr><td><span class="range-dot absent"></span>0 – 2</td><td>Capacity likely absent</td></tr>' +
+      '</table>';
+    caveatBox.textContent = 'Score ranges are based on proportional application of the Appelbaum & Grisso four-ability framework. Clinical judgment supersedes score thresholds. This tool is a documentation aid and does not constitute a formal legal competency determination.';
+  } else {
+    rangesWrap.innerHTML = '<div class="ranges-title">Score Interpretation (MacCAT-T)</div>' +
+      '<table class="ranges-table">' +
+      '<tr><th>Domain</th><th>Max</th><th>Adequate Range</th></tr>' +
+      '<tr><td>Understanding</td><td>6</td><td>≥ 4</td></tr>' +
+      '<tr><td>Appreciation</td><td>4</td><td>≥ 3</td></tr>' +
+      '<tr><td>Reasoning</td><td>6</td><td>≥ 4</td></tr>' +
+      '<tr><td>Expressing a Choice</td><td>2</td><td>2</td></tr>' +
+      '<tr><td><strong>Total</strong></td><td><strong>20</strong></td><td><strong>≥ 15 suggests capacity present</strong></td></tr>' +
+      '</table>';
+    caveatBox.textContent = 'MacCAT-T cutoffs are based on published normative data (Grisso & Appelbaum, 1998). A score below threshold does not automatically indicate incapacity — domain-specific deficits and clinical context must be weighed. Clinical judgment supersedes score thresholds. This tool is a documentation aid and does not constitute a formal legal competency determination.';
+  }
+}
+
+// ===================== IMPRESSION =====================
+function setImpression(val) {
+  _impression = val;
+  highlightImpression(val, false);
+  generateNote();
+}
+
+function highlightImpression(val, isAuto) {
+  ['present','questionable','absent'].forEach(function(v) {
+    var btn = document.getElementById('imp' + v.charAt(0).toUpperCase() + v.slice(1));
+    if (!btn) return;
+    btn.className = 'impression-btn';
+    if (v === val) btn.classList.add('active-' + v);
+  });
+
+  var box = document.getElementById('interpBox');
+  if (!val) { box.style.display = 'none'; return; }
+  box.style.display = '';
+  box.className = 'interp-box ' + val;
+
+  var titles = {
+    present: 'Capacity Present',
+    questionable: 'Capacity Questionable',
+    absent: 'Capacity Absent'
+  };
+  var descs = {
+    present: 'The patient demonstrates sufficient ability across all four domains to make an informed decision regarding the proposed treatment. Consent obtained is clinically valid.',
+    questionable: 'Performance across one or more domains is marginal or inconsistent. Further evaluation, re-assessment after intervention, or ethics consultation may be warranted before proceeding.',
+    absent: 'The patient does not demonstrate sufficient decision-making ability across one or more critical domains. Surrogate decision-making, advance directives, or ethics consultation should be pursued.'
+  };
+  box.innerHTML = '<div class="interp-label">' + (isAuto ? 'Suggested — ' : '') + 'Capacity Impression</div>' +
+    '<div class="interp-title">' + titles[val] + '</div>' +
+    '<div class="interp-desc">' + descs[val] + '</div>';
+}
+
+// ===================== NOTE GENERATION =====================
+function generateNote() {
+  var decision = (document.getElementById('decisionInput').value || '').trim();
+  var domains = MODE === 'simple' ? SIMPLE_DOMAINS : DETAILED_DOMAINS;
+
+  var impression = _impression;
+  if (!impression) {
+    // Use suggested if all answered
+    var maxTotal = MODE === 'simple' ? 8 : 20;
+    var total = 0; var allAnswered = true;
+    domains.forEach(function(d) {
+      var ds = getDomainScore(d);
+      if (ds === null) allAnswered = false;
+      else total += ds;
+    });
+    if (allAnswered) impression = suggestImpression(total, maxTotal);
+  }
+
+  var impLabels = { present: 'Capacity Present', questionable: 'Capacity Questionable', absent: 'Capacity Absent' };
+  var lines = [];
+
+  lines.push('DECISIONAL CAPACITY ASSESSMENT');
+  lines.push('Framework: Appelbaum & Grisso Four-Ability Model' + (MODE === 'detailed' ? ' (MacCAT-T Structure)' : ' — Simple Mode'));
+  if (decision) lines.push('Decision Under Evaluation: ' + decision);
+  lines.push('');
+  // AMA Context block
+  if (AMA_ACTIVE) {
+    var amaBlock = buildAMASection();
+    if (amaBlock) { lines.push(amaBlock); }
+  }
+
+  // Domain paragraphs
+  domains.forEach(function(d) {
+    var notes = (document.getElementById('notes-' + d.id) || {}).value || '';
+    notes = notes.trim();
+    var ds = getDomainScore(d);
+    var max = getMaxDomainScore(d);
+    var scoreStr = ds !== null ? (' (Score: ' + ds + '/' + max + ')') : '';
+
+    var level = ds === null ? null : (ds / max >= 0.75 ? 'adequate' : ds / max >= 0.4 ? 'partial' : 'absent');
+    var levelMap = { adequate: 'adequate', partial: 'partial', absent: 'absent' };
+
+    var intro = {
+      understanding: {
+        adequate: AMA_ACTIVE ? 'Patient demonstrated adequate understanding of the medical risks associated with AMA discharge, including the risks disclosed relevant to their specific clinical situation.' : 'Patient demonstrated adequate understanding of the disclosed information.',
+        partial:  AMA_ACTIVE ? 'Patient demonstrated partial understanding of the medical risks associated with AMA discharge; notable gaps were identified in their ability to recall or articulate key disclosed risks.' : 'Patient demonstrated partial understanding of the disclosed information, with notable gaps.',
+        absent:   AMA_ACTIVE ? 'Patient was unable to demonstrate meaningful understanding of the medical risks associated with AMA discharge despite disclosure.' : 'Patient was unable to demonstrate meaningful understanding of the disclosed information.'
+      },
+      appreciation: {
+        adequate: AMA_ACTIVE ? 'Patient demonstrated adequate appreciation that the disclosed medical risks of AMA discharge apply to their own specific situation and clinical history.' : 'Patient demonstrated adequate appreciation of the disorder and its personal relevance to their treatment decision.',
+        partial:  AMA_ACTIVE ? 'Patient demonstrated only partial appreciation of the personal relevance of the disclosed AMA risks; inconsistencies or minimization were noted.' : 'Patient demonstrated only partial appreciation of the disorder or its personal relevance, with inconsistencies noted.',
+        absent:   AMA_ACTIVE ? 'Patient was unable to demonstrate meaningful appreciation that the disclosed risks of AMA discharge apply to their own situation, despite specific counseling.' : 'Patient was unable to demonstrate meaningful appreciation that the disclosed information applies to their own situation.'
+      },
+      reasoning: {
+        adequate: AMA_ACTIVE ? 'Patient demonstrated adequate reasoning ability, articulating a logical basis for the decision to leave AMA and demonstrating ability to weigh the risks of discharge against perceived benefits of leaving.' : 'Patient demonstrated adequate reasoning ability, including comparison of options and articulation of a logical basis for their decision.',
+        partial:  AMA_ACTIVE ? 'Patient demonstrated partial reasoning ability regarding the AMA decision; gaps in weighing the risks of discharge against alternatives, or logical inconsistencies in the stated rationale, were noted.' : 'Patient demonstrated partial reasoning ability; gaps in comparative thinking or consequence generation were noted.',
+        absent:   AMA_ACTIVE ? 'Patient was unable to demonstrate rational reasoning in support of the AMA decision; the stated rationale was absent, internally inconsistent, or clearly disconnected from the disclosed risks.' : 'Patient was unable to demonstrate rational manipulation of the disclosed information in service of a decision.'
+      },
+      choice: {
+        adequate: 'Patient clearly and consistently expressed a choice throughout the interview.',
+        partial:  'Patient expressed a choice, though consistency was limited and prompting was required.',
+        absent:   'Patient was unable to consistently express or maintain a decision.'
+      }
+    };
+
+    var domainText = '';
+    if (level && intro[d.id] && intro[d.id][level]) {
+      domainText = intro[d.id][level];
+    } else {
+      domainText = d.title + ': not yet rated.';
+    }
+    if (notes) domainText += ' ' + notes;
+
+    lines.push(d.number + '. ' + d.title.toUpperCase() + scoreStr);
+    lines.push(domainText);
+    lines.push('');
+  });
+
+  // Impression
+  if (impression) {
+    lines.push('CAPACITY IMPRESSION: ' + impLabels[impression].toUpperCase());
+    var impSentences = {
+      present:      AMA_ACTIVE ? 'Based on assessment across all four domains, the patient demonstrates adequate decisional capacity to make an informed decision regarding AMA discharge' + (decision ? ' (' + decision + ')' : '') + '. The patient was counseled on the specific medical risks of leaving against medical advice and demonstrated understanding, appreciation, and reasoning sufficient to support a valid informed decision.' : 'Based on assessment across all four domains, the patient demonstrates adequate decisional capacity regarding the decision under evaluation' + (decision ? ' (' + decision + ')' : '') + '. Informed consent obtained is clinically valid.',
+      questionable: 'Based on assessment across all four domains, decisional capacity is questionable. Marginal or inconsistent performance was identified in one or more domains. Further evaluation, re-assessment following clinical intervention, or ethics consultation is recommended prior to proceeding.',
+      absent:       AMA_ACTIVE ? 'Based on assessment across all four domains, the patient does not demonstrate sufficient decisional capacity to make a valid informed decision regarding AMA discharge' + (decision ? ' (' + decision + ')' : '') + '. Given the identified incapacity, the clinical team should explore all available options to facilitate continued treatment, including ethics consultation and review of applicable legal standards.' : 'Based on assessment across all four domains, the patient does not demonstrate sufficient decisional capacity regarding the decision under evaluation' + (decision ? ' (' + decision + ')' : '') + '. Surrogate decision-making, review of advance directives, and/or ethics consultation is recommended.'
+    };
+    lines.push(impSentences[impression]);
+    lines.push('');
+  }
+
+  lines.push('Note: This assessment is a clinical documentation aid based on the Appelbaum & Grisso framework and does not constitute a formal legal competency determination.');
+
+  document.getElementById('generatedNote').textContent = lines.join('\n');
+}
+
+// ===================== COPY NOTE =====================
+function copyNote() {
+  var text = document.getElementById('generatedNote').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('.copy-btn');
+    var orig = btn.innerHTML;
+    btn.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(function() { btn.innerHTML = orig; }, 2200);
+  }).catch(function() {
+    var box = document.getElementById('generatedNote');
+    var range = document.createRange();
+    range.selectNode(box);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  });
+}
+
+// ===================== SAVE PDF =====================
+function savePDF() {
+  window.print();
+}
+
+// ===================== RESET =====================
+function resetAll() {
+  scores = {};
+  _impression = null;
+  AMA_ACTIVE = false; AMA_FACILITY = null; AMA_SUBSTS = {}; AMA_SEVERITY = {};
+  document.getElementById('decisionInput').value = '';
+  document.getElementById('amaPanel').style.display = 'none';
+  document.getElementById('amaBtn').classList.remove('active');
+  // Uncheck all AMA checkboxes
+  document.querySelectorAll('.ama-panel input[type=checkbox]').forEach(function(cb){
+    cb.checked = false;
+    var item = cb.closest('.check-item');
+    if (item) item.classList.remove('checked');
+  });
+  // Reset substance sections
+  document.querySelectorAll('.subst-section').forEach(function(s){ s.classList.remove('visible'); });
+  document.getElementById('sect-general').style.display = 'none';
+  document.querySelectorAll('.seg-btn, .sev-btn').forEach(function(b){ b.className = b.className.replace(/\bactive\b/,'').replace(/\bactive-\w+/g,'').trim(); });
+  if (document.getElementById('alc-ciwa')) document.getElementById('alc-ciwa').value = '';
+  if (document.getElementById('opi-cows')) document.getElementById('opi-cows').value = '';
+  if (document.getElementById('other-subst-name')) document.getElementById('other-subst-name').value = '';
+  renderDomains();
+  updateScore();
+  generateNote();
+  // Clear impression UI
+  ['present','questionable','absent'].forEach(function(v) {
+    var btn = document.getElementById('imp' + v.charAt(0).toUpperCase() + v.slice(1));
+    if (btn) btn.className = 'impression-btn';
+  });
+  document.getElementById('interpBox').style.display = 'none';
+  document.getElementById('btnPrint').disabled = true;
+  document.getElementById('btnPDF').disabled = true;
+}
+
+// ===================== THEME =====================
+(function() {
+  var r = document.documentElement;
+  var d = 'dark';
+  r.setAttribute('data-theme', d);
+  var btn = document.getElementById('themeBtn');
+  var moon = '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  var sun  = '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+  if (btn) {
+    btn.innerHTML = sun;
+    btn.addEventListener('click', function() {
+      d = d === 'dark' ? 'light' : 'dark';
+      r.setAttribute('data-theme', d);
+      btn.innerHTML = d === 'dark' ? sun : moon;
+    });
+  }
+})();
+
+// ===================== FEEDBACK =====================
+function submitFeedback(e) {
+  e.preventDefault();
+  var form = e.target;
+  var data = new FormData(form);
+  fetch('https://formsubmit.co/ajax/troyfowlermd@gmail.com', {
+    method: 'POST',
+    headers: { 'Accept': 'application/json' },
+    body: data
+  }).then(function() {
+    form.reset();
+    var s = document.getElementById('feedbackSuccess');
+    if (s) { s.style.display = 'block'; setTimeout(function() { s.style.display = 'none'; }, 4000); }
+  }).catch(function() {});
+}
+
+
+// ===================== AMA CONTEXT =====================
+var AMA_ACTIVE = false;
+var AMA_FACILITY = null;   // 'detox' | 'rehab'
+var AMA_SUBSTS   = {};     // { alc: true, opi: true, ... }
+var AMA_SEVERITY = {};     // { alc: 'moderate', opi: 'mild', benzo: 'severe' }
+
+function toggleAMA() {
+  AMA_ACTIVE = !AMA_ACTIVE;
+  document.getElementById('amaPanel').style.display = AMA_ACTIVE ? 'block' : 'none';
+  document.getElementById('amaBtn').classList.toggle('active', AMA_ACTIVE);
+  // Auto-suggest decision text
+  if (AMA_ACTIVE && !document.getElementById('decisionInput').value.trim()) {
+    document.getElementById('decisionInput').value = 'Continued inpatient admission for substance use detox/rehabilitation';
+  }
+  generateNote();
+}
+
+function setFacility(type) {
+  AMA_FACILITY = type;
+  document.getElementById('facDetox').classList.toggle('active', type === 'detox');
+  document.getElementById('facRehab').classList.toggle('active', type === 'rehab');
+  // Show/hide withdrawal severity fields — detox only
+  ['sect-alc','sect-opi','sect-benzo'].forEach(function(id) {
+    var sect = document.getElementById(id);
+    if (!sect) return;
+    var sevRows = sect.querySelectorAll('.severity-row, .score-input-row');
+    sevRows.forEach(function(r) {
+      r.style.display = (type === 'detox') ? '' : 'none';
+    });
+    // worsen-expectation checkbox — only relevant for detox
+    var worsenItems = sect.querySelectorAll('[id$="-risk-worsen"]');
+    worsenItems.forEach(function(el) {
+      var item = el.closest('.check-item');
+      if (item) item.style.display = (type === 'detox') ? '' : 'none';
+    });
+  });
+  // Auto-check "symptoms expected to worsen" for active substances when switching to detox
+  if (type === 'detox') {
+    ['alc','opi','benzo'].forEach(function(s) {
+      if (AMA_SUBSTS[s]) autoCheckItem(s + '-risk-worsen');
+    });
+  } else {
+    // Uncheck worsen boxes when switching to rehab
+    ['alc','opi','benzo'].forEach(function(s) {
+      var cb = document.getElementById(s + '-risk-worsen');
+      var item = cb ? cb.closest('.check-item') : null;
+      if (cb && item) { cb.checked = false; item.classList.remove('checked'); }
+    });
+  }
+  generateNote();
+}
+
+function toggleSubst(s) {
+  AMA_SUBSTS[s] = !AMA_SUBSTS[s];
+  document.getElementById('subst' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('active', AMA_SUBSTS[s]);
+  var sect = document.getElementById('sect-' + s);
+  if (sect) sect.classList.toggle('visible', AMA_SUBSTS[s]);
+  // Show general section if any substance selected
+  var anySelected = Object.values(AMA_SUBSTS).some(Boolean);
+  document.getElementById('sect-general').style.display = anySelected ? 'block' : 'none';
+  // Auto-check "risks explained verbally" whenever general section is shown
+  if (anySelected) autoCheckItem('gen-risks-verbal');
+  generateNote();
+}
+
+function setSeverity(subst, level) {
+  AMA_SEVERITY[subst] = level;
+  ['mild','moderate','severe'].forEach(function(l) {
+    var btn = document.getElementById(subst + '-sev-' + l);
+    if (btn) {
+      btn.className = 'sev-btn';
+      if (l === level) btn.classList.add('active-' + l);
+    }
+  });
+  generateNote();
+}
+
+function toggleCheck(item, id) {
+  var cb = document.getElementById(id);
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  item.classList.toggle('checked', cb.checked);
+  generateNote();
+}
+
+function autoCheckItem(id) {
+  var cb = document.getElementById(id);
+  if (!cb) return;
+  var item = cb.closest('.check-item');
+  if (!item) return;
+  cb.checked = true;
+  item.classList.add('checked');
+}
+
+function getChecked(id) {
+  var el = document.getElementById(id);
+  return el ? el.checked : false;
+}
+
+function buildAMASection() {
+  if (!AMA_ACTIVE) return '';
+  var lines = [];
+  lines.push('AMA DISCHARGE CONTEXT');
+
+  var facLabel = AMA_FACILITY === 'detox' ? 'Medically Managed Withdrawal (Detox)'
+               : AMA_FACILITY === 'rehab' ? 'Residential Rehabilitation (Post-Detox)'
+               : 'Not specified';
+  lines.push('Facility Type: ' + facLabel);
+
+  var selectedSubsts = Object.keys(AMA_SUBSTS).filter(function(s){ return AMA_SUBSTS[s]; });
+  if (selectedSubsts.length) {
+    var substNames = { alc:'Alcohol', opi:'Opioids', benzo:'Benzodiazepines', stim:'Stimulants', other:'Other' };
+    lines.push('Substance(s): ' + selectedSubsts.map(function(s){ return substNames[s]||s; }).join(', '));
+  }
+  lines.push('');
+
+  // Per-substance sections
+  function substBlock(key, name) {
+    if (!AMA_SUBSTS[key]) return;
+    var sev = AMA_SEVERITY[key];
+    var ciwa = key === 'alc' ? (document.getElementById('alc-ciwa')||{}).value : null;
+    var cows = key === 'opi' ? (document.getElementById('opi-cows')||{}).value : null;
+    var otherName = key === 'other' ? ((document.getElementById('other-subst-name')||{}).value||'').trim() : null;
+
+    var header = name + (otherName ? ' (' + otherName + ')' : '');
+    if (sev) header += ' — ' + sev.charAt(0).toUpperCase() + sev.slice(1) + ' Withdrawal';
+    if (ciwa && ciwa !== '') header += ' (CIWA-Ar: ' + ciwa + ')';
+    if (cows && cows !== '') header += ' (COWS: ' + cows + ')';
+    lines.push(header);
+
+    var FIELD_LABELS = {
+      // Alcohol risks
+      'alc-risk-worsen':      'Counseled: withdrawal symptoms expected to worsen after leaving',
+      'alc-risk-seizure':     'Counseled: risk of withdrawal seizure',
+      'alc-risk-dt':          'Counseled: risk of delirium tremens',
+      'alc-risk-wernicke':    'Counseled: risk of Wernicke\'s encephalopathy',
+      'alc-risk-death':       'Counseled: risk of death from untreated withdrawal',
+      'alc-hx-seizure':       'History: prior withdrawal seizure',
+      'alc-hx-dt':            'History: prior delirium tremens',
+      'alc-hx-complicated':   'History: prior complicated detox',
+      'alc-hx-ama':           'History: prior AMA discharge during detox',
+      'alc-sx-tremor':        'Current: tremor observed at time of assessment',
+      'alc-sx-diaphoresis':   'Current: diaphoresis observed',
+      'alc-sx-confusion':     'Current: confusion/disorientation noted — may affect capacity assessment',
+      'alc-sx-agitation':     'Current: psychomotor agitation',
+      // Opioid risks
+      'opi-risk-worsen':      'Counseled: withdrawal symptoms expected to worsen after leaving',
+      'opi-risk-tolerance':   'Counseled: loss of tolerance increases overdose risk',
+      'opi-risk-fentanyl':    'Counseled: fentanyl exposure risk in local drug supply',
+      'opi-risk-od-death':    'Counseled: risk of overdose death',
+      'opi-risk-moud':        'MOUD (buprenorphine/methadone) discussed with patient',
+      'opi-hx-od':            'History: prior overdose',
+      'opi-hx-multi-od':      'History: multiple prior overdoses',
+      'opi-hx-recent-od':     'History: recent overdose within 90 days',
+      'opi-hx-ama':           'History: prior AMA discharge',
+      'opi-nx-accepted':      'Naloxone offered and accepted',
+      'opi-nx-declined':      'Naloxone offered; patient declined',
+      'opi-sx-distress':      'Current: severe withdrawal distress noted at time of assessment',
+      'opi-sx-craving':       'Current: patient endorses strong cravings',
+      // Benzo risks
+      'benzo-risk-worsen':    'Counseled: withdrawal symptoms expected to worsen after leaving',
+      'benzo-risk-seizure':   'Counseled: risk of withdrawal seizure',
+      'benzo-risk-delirium':  'Counseled: risk of withdrawal delirium',
+      'benzo-risk-death':     'Counseled: risk of death from untreated withdrawal',
+      'benzo-risk-coalc':     'Counseled: co-occurring alcohol use increases withdrawal risk',
+      'benzo-hx-seizure':     'History: prior benzodiazepine withdrawal seizure',
+      'benzo-hx-complicated': 'History: prior complicated withdrawal',
+      'benzo-hx-ama':         'History: prior AMA discharge during detox',
+      'benzo-sx-tremor':      'Current: tremor observed at time of assessment',
+      'benzo-sx-anxiety':     'Current: marked anxiety/autonomic arousal',
+      'benzo-sx-confusion':   'Current: confusion/disorientation noted — may affect capacity assessment',
+      // Stimulant risks
+      'stim-risk-psych':      'Counseled: risk of psychiatric decompensation',
+      'stim-risk-psychosis':  'Counseled: risk of stimulant-induced psychosis',
+      'stim-risk-environment':'Counseled: return to high-risk use environment',
+      'stim-hx-psychosis':    'History: prior stimulant-induced psychosis',
+      'stim-hx-psych-hosp':   'History: prior psychiatric hospitalization related to stimulant use',
+      'stim-hx-ama':          'History: prior AMA discharge',
+      'stim-sx-paranoia':     'Current: paranoia/psychosis present at time of assessment — may affect capacity',
+      'stim-sx-dysphoria':    'Current: marked dysphoria/crash state',
+      'stim-sx-impulsive':    'Current: impulsive decision-making observed',
+      // Other
+      'other-risk-incomplete':'Counseled: treatment incomplete at time of AMA',
+      'other-risk-environment':'Counseled: return to high-risk use environment',
+    };
+
+    // Always include relapse risk counseling (baseline standard of care — no checkbox needed)
+    var relapseBySubst = {
+      alc:   '• Counseled: risk of relapse to alcohol use',
+      opi:   '• Counseled: high risk of relapse and loss of tolerance upon discharge',
+      benzo: '• Counseled: risk of relapse to benzodiazepine use',
+      stim:  '• Counseled: high risk of relapse upon discharge',
+      other: '• Counseled: risk of relapse upon discharge'
+    };
+    if (relapseBySubst[key]) lines.push(relapseBySubst[key]);
+
+    var prefix = { alc:'alc-', opi:'opi-', benzo:'benzo-', stim:'stim-', other:'other-' }[key];
+    var relevant = Object.keys(FIELD_LABELS).filter(function(k){ return k.startsWith(prefix); });
+    relevant.forEach(function(k) {
+      if (getChecked(k)) lines.push('• ' + FIELD_LABELS[k]);
+    });
+    lines.push('');
+  }
+
+  substBlock('alc',   'Alcohol');
+  substBlock('opi',   'Opioids');
+  substBlock('benzo', 'Benzodiazepines');
+  substBlock('stim',  'Stimulants');
+  substBlock('other', 'Other Substance');
+
+  // General section
+  var GEN_LABELS = {
+    'gen-no-housing':         'Disposition concern: no identified housing / unstable housing',
+    'gen-no-followup':        'Disposition concern: no outpatient follow-up arranged',
+    'gen-no-transport':       'Disposition concern: no transportation from facility',
+    'gen-no-support':         'Disposition concern: no emergency contact or support person available',
+    'gen-no-rx':              'Disposition concern: no discharge prescriptions provided',
+    'gen-step-offered':       'Step-down level of care discussed and offered',
+    'gen-risks-verbal':       'Risks of AMA discharge explained verbally',
+    'gen-risks-written':      'Risks of AMA discharge explained in writing',
+    'gen-ama-signed':         'AMA form offered and signed by patient',
+    'gen-ama-refused':        'AMA form offered; patient refused to sign',
+    'gen-coercion':           'Possible coercion or external pressure on decision noted',
+    'gen-si':                 'Active suicidal ideation present — AMA discharge carries additional safety risk',
+    'gen-prior-ama':          'Pattern of prior AMA discharges documented',
+    'gen-withdrawal-capacity':'NOTE: Active withdrawal symptoms present at time of assessment that may be impairing cognitive function',
+  };
+  var genItems = Object.keys(GEN_LABELS).filter(function(k){ return getChecked(k); });
+  if (genItems.length) {
+    lines.push('General Disposition & Documentation');
+    genItems.forEach(function(k){ lines.push('• ' + GEN_LABELS[k]); });
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+// ===================== ZOOM =====================
+function toggleZoom() {
+  var zoomed = document.documentElement.getAttribute('data-zoom') === '1';
+  document.documentElement.setAttribute('data-zoom', zoomed ? '0' : '1');
+  document.getElementById('zoomBtn').classList.toggle('active', !zoomed);
+}
+
+// ===================== INIT =====================
+renderDomains();
+updateScore();
+generateNote();
+</script>
+
+</body>
+</html>

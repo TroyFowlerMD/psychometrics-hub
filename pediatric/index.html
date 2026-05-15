@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Psychometrics - Psychometrics Hub</title>
+<style>
+:root{
+  --bg:#0b1016;
+  --panel:#141c25;
+  --panel-2:#1a2531;
+  --border:#293544;
+  --text:#e6edf3;
+  --muted:#9ba6b3;
+  --teal:#58a6a6;
+  --gold:#d2a14a;
+  --violet:#8b75d1;
+  --coral:#da7864;
+  --amber:#c78335;
+  --shadow:0 18px 32px rgba(0,0,0,0.25);
+}
+*{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:"Segoe UI",system-ui,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top right, rgba(210,161,74,0.12), transparent 28%),
+    radial-gradient(circle at top left, rgba(88,166,166,0.1), transparent 24%),
+    linear-gradient(180deg, #0a0f15 0%, var(--bg) 100%);
+}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 18px;
+  background:rgba(20,28,37,0.84);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-left{min-width:0}
+.topbar-title{font-size:15px;font-weight:700;letter-spacing:-0.01em}
+.topbar-subtitle{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn,.lang-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  padding:0 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel-2);
+  color:var(--text);
+  text-decoration:none;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  transition:border-color .16s ease, transform .16s ease, background .16s ease;
+}
+.btn:hover,.lang-btn:hover{transform:translateY(-1px);border-color:rgba(88,166,166,0.4)}
+.shell{max-width:1180px;margin:0 auto;padding:26px 18px 48px}
+.hero{
+  display:grid;
+  grid-template-columns:1.2fr .9fr;
+  gap:18px;
+  margin-bottom:20px;
+}
+.hero-panel,.info-panel,.section{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--border);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+}
+.hero-panel{padding:28px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.3rem);line-height:1}
+.lede{margin:0;max-width:680px;font-size:1rem;line-height:1.65;color:var(--muted)}
+.info-panel{padding:22px}
+.info-panel h2{margin:0 0 12px;font-size:1rem}
+.info-list{display:grid;gap:10px}
+.info-item{padding:12px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,0.03)}
+.info-item strong{display:block;margin-bottom:4px}
+.info-item span{font-size:12px;color:var(--muted);line-height:1.45}
+.section{padding:20px;margin-bottom:18px}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.section-dot{width:10px;height:10px;border-radius:999px;flex-shrink:0}
+.section-title{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.section-rule{flex:1;height:1px;background:var(--border)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.card{
+  display:flex;
+  flex-direction:column;
+  min-height:126px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:rgba(255,255,255,0.03);
+  color:inherit;
+  text-decoration:none;
+  transition:transform .16s ease, border-color .16s ease, background .16s ease;
+}
+.card:hover{transform:translateY(-2px);background:var(--card-dim);border-color:var(--card-border)}
+.card[data-cat="depression"]{--card-dim:rgba(88,166,166,0.12);--card-border:rgba(88,166,166,0.35);--card-accent:var(--teal)}
+.card[data-cat="anxiety"]{--card-dim:rgba(210,161,74,0.12);--card-border:rgba(210,161,74,0.35);--card-accent:var(--gold)}
+.card[data-cat="adhd"]{--card-dim:rgba(139,117,209,0.12);--card-border:rgba(139,117,209,0.35);--card-accent:var(--violet)}
+.card[data-cat="universal"]{--card-dim:rgba(218,120,100,0.12);--card-border:rgba(218,120,100,0.35);--card-accent:var(--coral)}
+.card[data-cat="substance"]{--card-dim:rgba(199,131,53,0.12);--card-border:rgba(199,131,53,0.35);--card-accent:var(--amber)}
+.card-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:8px}
+.abbr{font-size:1rem;font-weight:800;color:var(--card-accent)}
+.age{font-size:11px;font-weight:700;padding:5px 8px;border-radius:999px;border:1px solid var(--card-border);background:var(--card-dim);color:var(--card-accent)}
+.name{font-size:.88rem;font-weight:700;line-height:1.35;margin-bottom:8px}
+.desc{font-size:.79rem;line-height:1.5;color:var(--muted);flex:1}
+.footer{padding-top:8px;text-align:center;font-size:12px;color:var(--muted)}
+.footer a{color:inherit;text-decoration:none}
+.footer a:hover{color:var(--text)}
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr}
+}
+@media (max-width:620px){
+  .topbar{padding:10px 12px;align-items:flex-start;flex-direction:column}
+  .topbar-right{width:100%;justify-content:space-between}
+  .shell{padding:20px 12px 36px}
+  .hero-panel,.info-panel,.section{border-radius:18px}
+}
+</style>
+</head>
+<body>
+<header class="topbar" role="banner">
+  <div class="topbar-left">
+    <div class="topbar-title" id="title-main">Pediatric Psychometrics</div>
+    <div class="topbar-subtitle" id="title-sub">Psychometrics Hub - bilingual pediatric tools</div>
+  </div>
+  <div class="topbar-right">
+    <a class="btn" href="../index.html">Hub</a>
+    <button class="lang-btn" id="lang-toggle" type="button" onclick="toggleLang()">ES</button>
+  </div>
+</header>
+
+<main class="shell" role="main">
+  <section class="hero">
+    <div class="hero-panel">
+      <div class="eyebrow" data-en="Pediatric Collection" data-es="Pediatric Collection">Pediatric Collection</div>
+      <h1 data-en="Pediatric screening tools, kept bilingual." data-es="Pediatric screening tools, kept bilingual.">Pediatric screening tools, kept bilingual.</h1>
+      <p class="lede" data-en="This section preserves the bilingual structure of the pediatric source repo while giving it a cleaner destination dashboard inside psychometrics-hub." data-es="This section preserves the bilingual structure of the pediatric source repo while giving it a cleaner destination dashboard inside psychometrics-hub.">This section preserves the bilingual structure of the pediatric source repo while giving it a cleaner destination dashboard inside psychometrics-hub.</p>
+    </div>
+    <aside class="info-panel">
+      <h2 data-en="Preserved in this merge" data-es="Preserved in this merge">Preserved in this merge</h2>
+      <div class="info-list">
+        <div class="info-item"><strong>EN / ES files</strong><span data-en="Each bilingual tool still points to dedicated English and Spanish pages." data-es="Each bilingual tool still points to dedicated English and Spanish pages.">Each bilingual tool still points to dedicated English and Spanish pages.</span></div>
+        <div class="info-item"><strong>Legacy redirects</strong><span data-en="Shortcut pages like gad7.html are still present in this folder." data-es="Shortcut pages like gad7.html are still present in this folder.">Shortcut pages like gad7.html are still present in this folder.</span></div>
+        <div class="info-item"><strong>Source content</strong><span data-en="The underlying tool pages were not rewritten in this polish pass." data-es="The underlying tool pages were not rewritten in this polish pass.">The underlying tool pages were not rewritten in this polish pass.</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-dot" style="background:var(--teal)"></div>
+      <div class="section-title" data-en="Depression" data-es="Depression">Depression</div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="grid">
+      <a class="card bilingual-link" data-cat="depression" data-en-href="smfq-en.html" data-es-href="smfq-es.html" href="smfq-en.html">
+        <div class="card-top"><div class="abbr">SMFQ-C</div><div class="age">11 and under</div></div>
+        <div class="name" data-en="Short Mood and Feelings Questionnaire - Child" data-es="Short Mood and Feelings Questionnaire - Child">Short Mood and Feelings Questionnaire - Child</div>
+        <div class="desc" data-en="Child self-report mood screening preserved with bilingual routing." data-es="Child self-report mood screening preserved with bilingual routing.">Child self-report mood screening preserved with bilingual routing.</div>
+      </a>
+      <a class="card bilingual-link" data-cat="depression" data-en-href="mfq-parent-en.html" data-es-href="mfq-parent-es.html" href="mfq-parent-en.html">
+        <div class="card-top"><div class="abbr">SMFQ-P</div><div class="age">6 to 17</div></div>
+        <div class="name" data-en="Short Mood and Feelings Questionnaire - Parent" data-es="Short Mood and Feelings Questionnaire - Parent">Short Mood and Feelings Questionnaire - Parent</div>
+        <div class="desc" data-en="Parent-report mood screening for pediatric follow-up." data-es="Parent-report mood screening for pediatric follow-up.">Parent-report mood screening for pediatric follow-up.</div>
+      </a>
+      <a class="card bilingual-link" data-cat="depression" data-en-href="phqa-en.html" data-es-href="phqa-es.html" href="phqa-en.html">
+        <div class="card-top"><div class="abbr">PHQ-A</div><div class="age">12 plus</div></div>
+        <div class="name" data-en="Patient Health Questionnaire - Adolescent" data-es="Patient Health Questionnaire - Adolescent">Patient Health Questionnaire - Adolescent</div>
+        <div class="desc" data-en="Adolescent depression screening with language-specific tool pages." data-es="Adolescent depression screening with language-specific tool pages.">Adolescent depression screening with language-specific tool pages.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-dot" style="background:var(--gold)"></div>
+      <div class="section-title" data-en="Anxiety" data-es="Ansiedad">Anxiety</div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="grid">
+      <a class="card bilingual-link" data-cat="anxiety" data-en-href="scared-en.html" data-es-href="scared-es.html" href="scared-en.html">
+        <div class="card-top"><div class="abbr">SCARED-C</div><div class="age">8 to 18</div></div>
+        <div class="name" data-en="Screen for Child Anxiety - Child" data-es="Tamizaje de ansiedad infantil - nino o nina">Screen for Child Anxiety - Child</div>
+        <div class="desc" data-en="Child-reported anxiety screening preserved in English and Spanish." data-es="Tamizaje de ansiedad reportado por el menor, conservado en ingles y espanol.">Child-reported anxiety screening preserved in English and Spanish.</div>
+      </a>
+      <a class="card bilingual-link" data-cat="anxiety" data-en-href="scared-parent-en.html" data-es-href="scared-parent-es.html" href="scared-parent-en.html">
+        <div class="card-top"><div class="abbr">SCARED-P</div><div class="age">8 to 18</div></div>
+        <div class="name" data-en="Screen for Child Anxiety - Parent" data-es="Tamizaje de ansiedad infantil - padres">Screen for Child Anxiety - Parent</div>
+        <div class="desc" data-en="Parent version of the pediatric anxiety screen." data-es="Version para padres del tamizaje pediatrico de ansiedad.">Parent version of the pediatric anxiety screen.</div>
+      </a>
+      <a class="card bilingual-link" data-cat="anxiety" data-en-href="gad7-en.html" data-es-href="gad7-es.html" href="gad7-en.html">
+        <div class="card-top"><div class="abbr">GAD-7</div><div class="age">12 plus</div></div>
+        <div class="name" data-en="Generalized Anxiety Disorder-7" data-es="Trastorno de ansiedad generalizada-7">Generalized Anxiety Disorder-7</div>
+        <div class="desc" data-en="Adolescent and pediatric anxiety monitoring page." data-es="Pagina de monitoreo de ansiedad para adolescentes y poblacion pediatrica.">Adolescent and pediatric anxiety monitoring page.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-dot" style="background:var(--violet)"></div>
+      <div class="section-title" data-en="ADHD" data-es="TDAH">ADHD</div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="grid">
+      <a class="card bilingual-link" data-cat="adhd" data-en-href="cap-en.html" data-es-href="cap-es.html" href="cap-en.html">
+        <div class="card-top"><div class="abbr">CAP</div><div class="age">teacher</div></div>
+        <div class="name" data-en="Children's Attention Problems" data-es="Problemas de atencion infantil">Children's Attention Problems</div>
+        <div class="desc" data-en="Teacher-focused attention screening tool preserved from the source repo." data-es="Herramienta de tamizaje de atencion orientada a docentes, conservada del repositorio original.">Teacher-focused attention screening tool preserved from the source repo.</div>
+      </a>
+      <a class="card bilingual-link" data-cat="adhd" data-en-href="snapiv-en.html" data-es-href="snapiv-es.html" href="snapiv-en.html">
+        <div class="card-top"><div class="abbr">SNAP-IV</div><div class="age">6 to 18</div></div>
+        <div class="name" data-en="Swanson, Nolan and Pelham Rating Scale" data-es="Escala de Swanson, Nolan y Pelham">Swanson, Nolan and Pelham Rating Scale</div>
+        <div class="desc" data-en="Core ADHD symptom rating scale with bilingual versions." data-es="Escala central de sintomas de TDAH con versiones bilingues.">Core ADHD symptom rating scale with bilingual versions.</div>
+      </a>
+      <a class="card bilingual-link" data-cat="adhd" data-en-href="asrs-en.html" data-es-href="asrs-es.html" href="asrs-en.html">
+        <div class="card-top"><div class="abbr">ASRS-5</div><div class="age">18 plus</div></div>
+        <div class="name" data-en="Adult ADHD Self-Report Scale" data-es="Escala de autoinforme de TDAH en adultos">Adult ADHD Self-Report Scale</div>
+        <div class="desc" data-en="Included here because it exists in the legacy pediatric repo and remains intact." data-es="Se mantiene aqui porque ya existia en el repositorio pediatrico original.">Included here because it exists in the legacy pediatric repo and remains intact.</div>
+      </a>
+      <a class="card" data-cat="adhd" href="vanderbilt-parent.html">
+        <div class="card-top"><div class="abbr">Vanderbilt-P</div><div class="age">6 to 12</div></div>
+        <div class="name" data-en="Vanderbilt - Parent" data-es="Vanderbilt - padres">Vanderbilt - Parent</div>
+        <div class="desc" data-en="Parent Vanderbilt page preserved exactly as sourced." data-es="Pagina Vanderbilt para padres conservada tal como venia en el origen.">Parent Vanderbilt page preserved exactly as sourced.</div>
+      </a>
+      <a class="card" data-cat="adhd" href="vanderbilt-teacher.html">
+        <div class="card-top"><div class="abbr">Vanderbilt-T</div><div class="age">6 to 12</div></div>
+        <div class="name" data-en="Vanderbilt - Teacher" data-es="Vanderbilt - maestros">Vanderbilt - Teacher</div>
+        <div class="desc" data-en="Teacher Vanderbilt page preserved exactly as sourced." data-es="Pagina Vanderbilt para maestros conservada tal como venia en el origen.">Teacher Vanderbilt page preserved exactly as sourced.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-dot" style="background:var(--coral)"></div>
+      <div class="section-title" data-en="Universal Screening" data-es="Tamizaje universal">Universal Screening</div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="grid">
+      <a class="card bilingual-link" data-cat="universal" data-en-href="psc17-en.html" data-es-href="psc17-es.html" href="psc17-en.html">
+        <div class="card-top"><div class="abbr">PSC-17</div><div class="age">4 to 16</div></div>
+        <div class="name" data-en="Pediatric Symptom Checklist" data-es="Lista pediatrica de sintomas">Pediatric Symptom Checklist</div>
+        <div class="desc" data-en="General pediatric screening preserved in English and Spanish." data-es="Tamizaje pediatrico general conservado en ingles y espanol.">General pediatric screening preserved in English and Spanish.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-dot" style="background:var(--amber)"></div>
+      <div class="section-title" data-en="Substance Use" data-es="Uso de sustancias">Substance Use</div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="grid">
+      <a class="card bilingual-link" data-cat="substance" data-en-href="crafft-en.html" data-es-href="crafft-es.html" href="crafft-en.html">
+        <div class="card-top"><div class="abbr">CRAFFT 2.1</div><div class="age">12 to 21</div></div>
+        <div class="name" data-en="Substance Use Screening - Adolescents" data-es="Tamizaje de uso de sustancias - adolescentes">Substance Use Screening - Adolescents</div>
+        <div class="desc" data-en="Adolescent substance use screening preserved with bilingual routing." data-es="Tamizaje de uso de sustancias en adolescentes conservado con rutas bilingues.">Adolescent substance use screening preserved with bilingual routing.</div>
+      </a>
+      <a class="card bilingual-link" data-cat="substance" data-en-href="dast10-en.html" data-es-href="dast10-es.html" href="dast10-en.html">
+        <div class="card-top"><div class="abbr">DAST-10</div><div class="age">15 plus</div></div>
+        <div class="name" data-en="Drug Abuse Screening Test" data-es="Prueba de deteccion de abuso de drogas">Drug Abuse Screening Test</div>
+        <div class="desc" data-en="Drug use screening page kept in both languages." data-es="Pagina de tamizaje de uso de drogas mantenida en ambos idiomas.">Drug use screening page kept in both languages.</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="footer">
+    <a href="../index.html">Back to Psychometrics Hub</a>
+  </div>
+</main>
+
+<script>
+var strings = {
+  en: {
+    titleMain: 'Pediatric Psychometrics',
+    titleSub: 'Psychometrics Hub - bilingual pediatric tools',
+    langLabel: 'ES'
+  },
+  es: {
+    titleMain: 'Psicometria pediatrica',
+    titleSub: 'Psychometrics Hub - herramientas pediatricas bilingues',
+    langLabel: 'EN'
+  }
+};
+
+function getLangFromURL() {
+  return new URLSearchParams(window.location.search).get('lang') === 'es' ? 'es' : 'en';
+}
+
+function applyLang(lang) {
+  document.documentElement.lang = lang;
+  document.getElementById('title-main').textContent = strings[lang].titleMain;
+  document.getElementById('title-sub').textContent = strings[lang].titleSub;
+  document.getElementById('lang-toggle').textContent = strings[lang].langLabel;
+
+  document.querySelectorAll('[data-en][data-es]').forEach(function (el) {
+    el.textContent = el.getAttribute(lang === 'en' ? 'data-en' : 'data-es');
+  });
+
+  document.querySelectorAll('.bilingual-link').forEach(function (el) {
+    el.setAttribute('href', lang === 'en' ? el.getAttribute('data-en-href') : el.getAttribute('data-es-href'));
+  });
+}
+
+function setLang(lang) {
+  var params = new URLSearchParams(window.location.search);
+  params.set('lang', lang);
+  history.replaceState(null, '', '?' + params.toString());
+  applyLang(lang);
+}
+
+function toggleLang() {
+  setLang(getLangFromURL() === 'en' ? 'es' : 'en');
+}
+
+applyLang(getLangFromURL());
+</script>
+</body>
+</html>
