@@ -321,11 +321,27 @@ button { cursor: pointer; background: none; border: none; font: inherit; color: 
 
 
 /* ===================== TEXT ZOOM ===================== */
+[data-zoom='-1'] {
+  --text-xs:   clamp(0.6875rem, 0.65rem + 0.2vw, 0.8125rem);
+  --text-sm:   clamp(0.8125rem, 0.75rem + 0.25vw, 0.9375rem);
+  --text-base: clamp(0.9375rem, 0.875rem + 0.2vw, 1.0625rem);
+  --text-lg:   clamp(1rem, 0.95rem + 0.5vw, 1.25rem);
+  --text-xl:   clamp(1.25rem, 1.05rem + 0.9vw, 1.85rem);
+}
+
 [data-zoom='1'] {
   --text-xs:   clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
   --text-sm:   clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
   --text-base: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
   --text-lg:   clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+}
+
+[data-zoom='2'] {
+  --text-xs:   clamp(1rem, 0.9rem + 0.4vw, 1.125rem);
+  --text-sm:   clamp(1.125rem, 1rem + 0.45vw, 1.25rem);
+  --text-base: clamp(1.25rem, 1.1rem + 0.85vw, 1.625rem);
+  --text-lg:   clamp(1.625rem, 1.3rem + 1.35vw, 2.375rem);
+  --text-xl:   clamp(1.875rem, 1.45rem + 1.75vw, 2.75rem);
 }
 
 
@@ -499,7 +515,8 @@ button { cursor: pointer; background: none; border: none; font: inherit; color: 
   </div>
   <div class="topbar-right">
     <button class="ama-btn" id="amaBtn" onclick="toggleAMA()">AMA</button>
-    <button class="zoom-btn" id="zoomBtn" onclick="toggleZoom()" aria-label="Increase text size" title="Increase text size">A+</button>
+    <button class="zoom-btn" id="zoomOutBtn" onclick="adjustZoom(-1)" aria-label="Decrease text size" title="Decrease text size">A-</button>
+    <button class="zoom-btn" id="zoomInBtn" onclick="adjustZoom(1)" aria-label="Increase text size" title="Increase text size">A+</button>
     <button class="reset-btn" onclick="resetAll()">Reset</button>
     <button class="theme-btn" id="themeBtn" aria-label="Toggle theme"></button>
   </div>
@@ -1616,16 +1633,26 @@ function buildAMASection() {
 }
 
 // ===================== ZOOM =====================
-function toggleZoom() {
-  var zoomed = document.documentElement.getAttribute('data-zoom') === '1';
-  document.documentElement.setAttribute('data-zoom', zoomed ? '0' : '1');
-  document.getElementById('zoomBtn').classList.toggle('active', !zoomed);
+var ZOOM_LEVEL = Number(document.documentElement.getAttribute('data-zoom') || '0');
+
+function updateZoomButtons() {
+  var zoomOutBtn = document.getElementById('zoomOutBtn');
+  var zoomInBtn = document.getElementById('zoomInBtn');
+  if (zoomOutBtn) zoomOutBtn.classList.toggle('active', ZOOM_LEVEL < 0);
+  if (zoomInBtn) zoomInBtn.classList.toggle('active', ZOOM_LEVEL > 0);
+}
+
+function adjustZoom(direction) {
+  ZOOM_LEVEL = Math.max(-1, Math.min(2, ZOOM_LEVEL + direction));
+  document.documentElement.setAttribute('data-zoom', String(ZOOM_LEVEL));
+  updateZoomButtons();
 }
 
 // ===================== INIT =====================
 renderDomains();
 updateScore();
 generateNote();
+updateZoomButtons();
 </script>
 
 </body>
