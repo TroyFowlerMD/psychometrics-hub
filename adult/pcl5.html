@@ -703,6 +703,29 @@ a, button, [role='button'], input, select {
   width: calc(100% + 28px + var(--space-4) + 2rem);
 }
 
+.item-note-input {
+  display: block;
+  width: calc(100% + 28px + var(--space-4) + 2rem);
+  margin: var(--space-2) -1rem 0 calc(-28px - var(--space-4) - 1rem);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-xs);
+}
+
+.item-note-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.item-note-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-bg);
+}
+
 .radio-option {
   flex: 1;
   min-width: 0;
@@ -916,6 +939,11 @@ a, button, [role='button'], input, select {
   border: 1px solid var(--color-border);
 }
 .btn-secondary:hover { background: var(--color-surface-offset-2); }
+.btn-secondary:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.btn-secondary:disabled:hover { background: var(--color-surface-offset); }
 
 .btn-ghost {
   display: inline-flex;
@@ -1594,6 +1622,44 @@ const LABELS = {
   en: { 0: 'Not at all', 1: 'A little bit', 2: 'Moderately', 3: 'Quite a bit', 4: 'Extremely' }
 };
 
+const PCL5_SYMPTOM_TERMS = {
+  1: 'intrusive memories',
+  2: 'trauma-related nightmares',
+  3: 'flashbacks',
+  4: 'psychological distress to triggers',
+  5: 'physiologic reactivity to triggers',
+  6: 'cognitive avoidance',
+  7: 'external trigger avoidance',
+  8: 'trauma-related amnesia',
+  9: 'persistent negative beliefs',
+  10: 'excessive blame',
+  11: 'persistent negative affect',
+  12: 'loss of interest',
+  13: 'emotional detachment',
+  14: 'anhedonia',
+  15: 'irritability/aggression',
+  16: 'self-destructive/reckless behavior',
+  17: 'hypervigilance',
+  18: 'hyperactive startle',
+  19: 'concentration impairment',
+  20: 'sleep disturbance'
+};
+
+const PCL5_CLUSTER_LABELS = {
+  B: 'intrusion symptoms',
+  C: 'avoidance',
+  D: 'negative alterations in cognition and mood',
+  E: 'hyperarousal and reactivity'
+};
+
+const PCL5_CLUSTER_REQUIREMENTS = { B: 1, C: 1, D: 2, E: 2 };
+
+const PCL5_SEVERITY_LABELS = {
+  4: 'severe',
+  3: 'moderately severe',
+  2: 'moderate'
+};
+
 function getTopbarHeight() {
   const tb = document.querySelector('.topbar');
   return tb ? tb.offsetHeight + 12 : 70;
@@ -1649,6 +1715,7 @@ function renderQuestions() {
               </div>
             `).join('')}
           </div>
+          <input type="text" class="item-note-input" id="q${q.n}_note" placeholder="Optional note..." oninput="onItemNoteChanged()">
         </div>
       </div>
     `;
@@ -1714,76 +1781,6 @@ function getScores() {
   return { total, answered };
 }
 
-function updateScore() {
-  const { total, answered } = getScores();
-  const complete = answered === 20;
-  const lang = document.documentElement.getAttribute('data-lang') || 'en';
-  const isEN = lang === 'en';
-
-  document.getElementById('totalScore').textContent = total;
-
-  const badge = document.getElementById('resultBadge');
-  const text  = document.getElementById('resultText');
-
-  function setBadge(esTxt, enTxt, cls) {
-    badge.className = 'score-result-badge ' + cls;
-    text.setAttribute('data-es', esTxt);
-    text.setAttribute('data-en', enTxt);
-    text.textContent = isEN ? enTxt : esTxt;
-  }
-
-  if (!complete) {
-    setBadge(`${answered}/20 respondidas`, `${answered}/20 answered`, 'incomplete incomplete-partial');
-    return;
-  }
-
-  if (total <= 32) {
-    setBadge('✓ Por debajo del umbral (<33)', '✓ Below threshold (<33)', 'negative');
-  } else {
-    setBadge('⚠ TEPT provisional (≥33)', '⚠ Provisional PTSD (≥33)', 'positive');
-  }
-}
-
-function generateNote() {
-  const { total, answered } = getScores();
-  const complete = answered === 20;
-  const lang = document.documentElement.getAttribute('data-lang') || 'en';
-  const isEN = lang === 'en';
-
-  const todayES = new Date().toLocaleDateString('es', { year: 'numeric', month: 'long', day: 'numeric' });
-  const todayEN = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-  let resultES, resultEN;
-  if (!complete) {
-    resultES = 'INCOMPLETO';
-    resultEN = 'INCOMPLETE';
-  } else if (total <= 32) {
-    resultES = 'Por debajo del umbral (<33)';
-    resultEN = 'Below threshold (<33)';
-  } else {
-    resultES = 'TEPT provisional (≥33)';
-    resultEN = 'Provisional PTSD (≥33)';
-  }
-
-  const noteEN =
-`PCL-5 — Results Summary — ${todayEN}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Total score: ${total} / 80
-Result: ${resultEN}
-Provisional PTSD threshold: ≥33
-Note: PCL-5 is a screening tool. Diagnosis requires clinical evaluation.`;
-
-  const noteES =
-`PCL-5 — Resumen de Resultados — ${todayES}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Puntuación total: ${total} / 80
-Resultado: ${resultES}
-Umbral TEPT provisional: ≥33
-Nota: El PCL-5 es una herramienta de tamizaje. El diagnóstico requiere evaluación clínica.`;
-
-  document.getElementById('noteSummaryBox').textContent = isEN ? noteEN : noteES;
-}
-
 // ===== COPY NOTE =====
 function copyNote() {
   const box = document.getElementById('noteSummaryBox');
@@ -1796,17 +1793,6 @@ function copyNote() {
     fb.classList.add('show');
     setTimeout(() => fb.classList.remove('show'), 2500);
   }).catch(() => {});
-}
-
-// ===== RESET =====
-function resetForm() {
-  QUESTIONS.forEach(q => {
-    document.querySelectorAll(`input[name="q${q.n}"]`).forEach(r => r.checked = false);
-  });
-  _answeredQNums.clear();
-  updateScore();
-  generateNote();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===== THEME =====
@@ -1853,6 +1839,162 @@ function setLang(lang) {
 
   if (typeof generateNote === 'function') generateNote();
   if (typeof updateScore === 'function') updateScore();
+}
+
+function onItemNoteChanged() {
+  generateNote();
+  generateDetailedNote();
+}
+
+function getAnswers() {
+  var answers = {};
+  QUESTIONS.forEach(function(q) {
+    var selected = document.querySelector('input[name="q' + q.n + '"]:checked');
+    if (selected) answers[q.n] = parseInt(selected.value, 10);
+  });
+  return answers;
+}
+
+function getItemNote(qNum) {
+  var noteInput = document.getElementById('q' + qNum + '_note');
+  return noteInput ? noteInput.value.trim().replace(/\s+/g, ' ') : '';
+}
+
+function formatSymptomTerm(qNum, score) {
+  var term = PCL5_SYMPTOM_TERMS[qNum] || ('item ' + qNum);
+  var note = score >= 2 ? getItemNote(qNum) : '';
+  return note ? term + ' (' + note + ')' : term;
+}
+
+function formatTierClauses(clauses) {
+  if (clauses.length === 1) return clauses[0];
+  if (clauses.length === 2) return clauses[0] + '; and ' + clauses[1];
+  return clauses.slice(0, -1).join('; ') + '; and ' + clauses[clauses.length - 1];
+}
+
+function getClusterPresence(answers) {
+  var criteria = {};
+  CLUSTERS.forEach(function(cluster) {
+    var present = 0;
+    for (var n = cluster.qStart; n <= cluster.qEnd; n++) {
+      if ((answers[n] || 0) >= 2) present++;
+    }
+    criteria[cluster.id] = present >= PCL5_CLUSTER_REQUIREMENTS[cluster.id];
+  });
+  return criteria;
+}
+
+function buildPcl5Narrative() {
+  var scores = getScores();
+  var complete = scores.answered === QUESTIONS.length;
+  var dateText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  if (!complete) {
+    return {
+      complete: false,
+      date: dateText,
+      headerText: 'Complete all questions to generate the PCL-5 results narrative.',
+      text: 'Complete all questions to generate the PCL-5 results narrative.'
+    };
+  }
+
+  var answers = getAnswers();
+  var criteria = getClusterPresence(answers);
+  var provisional = criteria.B && criteria.C && criteria.D && criteria.E;
+  var lines = [
+    'PCL-5 — ' + dateText,
+    'Total Severity Score: ' + scores.total + ' / 80',
+    'DSM-5 Cluster Criteria: B: ' + (criteria.B ? '✓' : '✗') + '  C: ' + (criteria.C ? '✓' : '✗') + '  D: ' + (criteria.D ? '✓' : '✗') + '  E: ' + (criteria.E ? '✓' : '✗'),
+    'Result: ' + (provisional ? 'Provisional PTSD' : 'Below PTSD threshold')
+  ];
+
+  var headerText = lines.join('\n');
+
+  CLUSTERS.forEach(function(cluster) {
+    var tiers = { 4: [], 3: [], 2: [] };
+    for (var n = cluster.qStart; n <= cluster.qEnd; n++) {
+      var score = answers[n];
+      if (score >= 2 && score <= 4) tiers[score].push(formatSymptomTerm(n, score));
+    }
+    var activeTiers = [4, 3, 2].filter(function(score) { return tiers[score].length > 0; });
+    if (activeTiers.length === 0) return;
+
+    var label = PCL5_CLUSTER_LABELS[cluster.id];
+    var sentence;
+    if (activeTiers.length === 1) {
+      var onlyScore = activeTiers[0];
+      sentence = 'Patient reports ' + PCL5_SEVERITY_LABELS[onlyScore] + ' ' + label + ' including ' + tiers[onlyScore].join(', ') + '.';
+    } else {
+      var clauses = activeTiers.map(function(score) {
+        return PCL5_SEVERITY_LABELS[score] + ' ' + tiers[score].join(', ');
+      });
+      sentence = 'Patient reports ' + label + ' including ' + formatTierClauses(clauses) + '.';
+    }
+    lines.push('', sentence);
+  });
+
+  return { complete: true, date: dateText, headerText: headerText, text: lines.join('\n') };
+}
+
+function updateScore() {
+  var scores = getScores();
+  var total = scores.total;
+  var answered = scores.answered;
+  var complete = answered === 20;
+  var lang = document.documentElement.getAttribute('data-lang') || 'en';
+  var isEN = lang === 'en';
+
+  document.getElementById('totalScore').textContent = total;
+
+  var badge = document.getElementById('resultBadge');
+  var text  = document.getElementById('resultText');
+
+  function setBadge(esTxt, enTxt, cls) {
+    badge.className = 'score-result-badge ' + cls;
+    text.setAttribute('data-es', esTxt);
+    text.setAttribute('data-en', enTxt);
+    text.textContent = isEN ? enTxt : esTxt;
+  }
+
+  if (!complete) {
+    setBadge(answered + '/20 respondidas', answered + '/20 answered', 'incomplete incomplete-partial');
+    return;
+  }
+
+  if (total <= 32) {
+    setBadge('✓ Por debajo del umbral (<33)', '✓ Below threshold (<33)', 'negative');
+  } else {
+    setBadge('⚠ TEPT provisional (≥33)', '⚠ Provisional PTSD (≥33)', 'positive');
+  }
+}
+
+function generateNote() {
+  var box = document.getElementById('noteSummaryBox');
+  if (box) box.textContent = buildPcl5Narrative().headerText;
+}
+
+function generatePcl5DetailedNote() {
+  var el = document.getElementById('detailViewText');
+  if (!el) return;
+  var narrative = buildPcl5Narrative();
+  el.textContent = narrative.text;
+  if (typeof updatePrintButtons === 'function') updatePrintButtons(narrative.complete);
+}
+
+function generateDetailedNote() {
+  generatePcl5DetailedNote();
+}
+
+function resetForm() {
+  QUESTIONS.forEach(function(q) {
+    document.querySelectorAll('input[name="q' + q.n + '"]').forEach(function(r) { r.checked = false; });
+    var note = document.getElementById('q' + q.n + '_note');
+    if (note) note.value = '';
+  });
+  _answeredQNums.clear();
+  updateScore();
+  generateNote();
+  generateDetailedNote();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===== INIT =====
@@ -2015,45 +2157,7 @@ window.copyNote=function(){
 };
 
 function generateDetailedNote(){
-  var el=document.getElementById('detailViewText');
-  if(!el)return;
-  if(typeof QUESTIONS==='undefined'||typeof LABELS==='undefined')return;
-  var lang=document.documentElement.getAttribute('data-lang')||'en';
-  var isEN=lang!=='es';
-  var answers={},answered=0;
-  QUESTIONS.forEach(function(q){
-    var sel=document.querySelector('input[name="q'+q.n+'"]:checked');
-    if(sel){answers[q.n]=parseInt(sel.value);answered++;}
-  });
-  var complete=answered===QUESTIONS.length;
-  if(!complete){
-    el.textContent=isEN?'(Complete all questions to see detailed view)':'(Completa todas las preguntas para ver la vista detallada)';
-    updatePrintButtons(false);
-    return;
-  }
-  updatePrintButtons(true);
-  // Pull header from simple view
-  var simpleBox=document.getElementById('noteSummaryBox');
-  var header=simpleBox?simpleBox.textContent.split('\n').slice(0,4).join('\n'):'';
-  var labels=LABELS[lang]||LABELS['en'];
-  var vals=window.RADIO_VALUES?window.RADIO_VALUES.slice():Object.keys(labels).map(Number);
-  vals.sort(function(a,b){return b-a;});
-  var groups={};vals.forEach(function(v){groups[v]=[];});
-  QUESTIONS.forEach(function(q){
-    var v=answers[q.n];
-    if(v!==undefined&&groups[v]!==undefined)groups[v].push(isEN?q.en:q.es);
-  });
-  var lines=[header,''];
-  vals.forEach(function(v){
-    if(groups[v]&&groups[v].length>0){
-      var lbl=labels[v]||String(v);
-      var prefix=v===0
-        ?(isEN?'Not endorsed ("'+lbl+'"): ':'No endosado ("'+lbl+'"): ')
-        :(isEN?'Rated "'+lbl+'": ':'Valorado "'+lbl+'": ');
-      lines.push(prefix+groups[v].join('; ')+'.');
-    }
-  });
-  el.textContent=lines.join('\n');
+  generatePcl5DetailedNote();
 }
 
 // Apply result view labels on lang change
@@ -2087,6 +2191,13 @@ function _applyResultLang(lang){
     _applyResultLang(lang);
   });
 })();
+</script>
+
+<script>
+// Keep the PCL-5 narrative output active after legacy result-view helpers load.
+window.generateDetailedNote = generatePcl5DetailedNote;
+if (typeof generateNote === 'function') generateNote();
+if (typeof generateDetailedNote === 'function') generateDetailedNote();
 </script>
 
 </body>
