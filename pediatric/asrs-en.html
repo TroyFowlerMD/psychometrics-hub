@@ -1332,7 +1332,7 @@ a, button, [role='button'], input, select {
               <div class="result-view-text" id="detailViewText">(Complete all questions to see detailed view)</div>
               <button type="button" class="result-view-copy-btn" onclick="copyDetailedNote()">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2v1"/></svg>
-                <span id="copyDetailLabel">Copy Detailed View</span>
+                <span id="copyDetailLabel">Copy Detailed Report</span>
                 <span class="copy-flash" id="copyDetailFlash"></span>
               </button>
             </div>
@@ -1341,7 +1341,7 @@ a, button, [role='button'], input, select {
               <div id="noteSummaryBox" class="note-summary-box visible result-view-text"></div>
               <button type="button" class="result-view-copy-btn" onclick="copyNote()">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2v1"/></svg>
-                <span id="copySimpleLabel">Copy Simple View</span>
+                <span id="copySimpleLabel">Copy Simple Report</span>
                 <span class="copy-flash" id="copySimpleFlash"></span>
               </button>
             </div>
@@ -1358,9 +1358,6 @@ a, button, [role='button'], input, select {
           </div>
 
         <div class="score-actions" style="margin-top:var(--space-4);">
-          <button type="button" class="btn-secondary" onclick="copyNote()">
-            <span id="copyBtnLabel" data-es="Copiar resumen" data-en="Copy summary">Copy summary</span>
-          </button>
           <span class="copy-feedback" id="copyFeedback"></span>
           <button type="button" class="btn-secondary" onclick="resetForm()">
             <span data-es="Reiniciar" data-en="Reset">Reset</span>

@@ -1485,10 +1485,6 @@ a, button, [role='button'], input, select {
 
           <!-- Actions -->
           <div class="score-actions">
-            <button type="button" class="btn-secondary" id="copyNoteBtn" onclick="copyNote()">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              <span data-es="Copiar resumen" data-en="Copy Summary">Copiar resumen</span>
-            </button>
             <button type="button" class="btn-secondary" onclick="resetForm()">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
               <span data-es="Reiniciar" data-en="Reset">Reiniciar</span>
@@ -1503,7 +1499,7 @@ a, button, [role='button'], input, select {
               <div class="result-view-text" id="detailViewText">(Complete all questions to see detailed view)</div>
               <button type="button" class="result-view-copy-btn" onclick="copyDetailedNote()">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2v1"/></svg>
-                <span id="copyDetailLabel">Copy Detailed View</span>
+                <span id="copyDetailLabel">Copy Detailed Report</span>
                 <span class="copy-flash" id="copyDetailFlash"></span>
               </button>
             </div>
@@ -1512,7 +1508,7 @@ a, button, [role='button'], input, select {
               <div class="note-summary-box visible result-view-text" id="noteSummaryBox"></div>
               <button type="button" class="result-view-copy-btn" onclick="copyNote()">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2v1"/></svg>
-                <span id="copySimpleLabel">Copy Simple View</span>
+                <span id="copySimpleLabel">Copy Simple Report</span>
                 <span class="copy-flash" id="copySimpleFlash"></span>
               </button>
             </div>
