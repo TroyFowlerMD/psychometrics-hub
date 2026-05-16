@@ -113,9 +113,7 @@ body{
 .lang-chip.active{background:var(--teal-dim);border-color:var(--teal-border);color:var(--teal)}
 .shell{max-width:1120px;margin:0 auto;padding:28px 18px 48px}
 .hero{
-  display:grid;
-  grid-template-columns:1.3fr .9fr;
-  gap:18px;
+  display:block;
   margin-bottom:22px;
 }
 .hero-panel,
@@ -140,7 +138,8 @@ h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
 .card{
   display:flex;
   flex-direction:column;
-  min-height:170px;
+  justify-content:center;
+  min-height:92px;
   padding:16px;
   border:1px solid var(--border);
   border-radius:18px;
@@ -157,7 +156,7 @@ h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
 .abbr{font-size:1.05rem;font-weight:800;color:var(--card-accent)}
 .age{font-size:11px;font-weight:700;padding:5px 8px;border-radius:999px;background:var(--card-dim);color:var(--card-accent);border:1px solid var(--card-border)}
-.name{font-size:.92rem;font-weight:700;line-height:1.35;margin-bottom:8px}
+.name{font-size:1rem;font-weight:700;line-height:1.35}
 .desc{font-size:.82rem;line-height:1.55;color:var(--muted);flex:1}
 .meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
 .pill{font-size:11px;font-weight:700;padding:5px 8px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--muted)}
@@ -194,19 +193,8 @@ h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
 <main class="shell">
   <section class="hero">
     <div class="hero-panel">
-      <div class="eyebrow">Adult Collection</div>
-      <h1 data-en="Adult psychometric tools in one place." data-es="Adult psychometric tools in one place.">Adult psychometric tools in one place.</h1>
-      <p class="lede" data-en="Adult screening, monitoring, and assessment tools for quick clinical access." data-es="Adult screening, monitoring, and assessment tools for quick clinical access.">Adult screening, monitoring, and assessment tools for quick clinical access.</p>
+      <h1 data-en="Adult Psychometrics" data-es="Adult Psychometrics">Adult Psychometrics</h1>
     </div>
-    <aside class="summary-panel">
-      <h2 data-en="At a glance" data-es="At a glance">At a glance</h2>
-      <div class="summary-grid">
-        <div class="stat"><strong>5</strong><span data-en="adult tools" data-es="adult tools">adult tools</span></div>
-        <div class="stat"><strong>4</strong><span data-en="screening domains" data-es="screening domains">screening domains</span></div>
-        <div class="stat"><strong>1</strong><span data-en="capacity workflow" data-es="capacity workflow">capacity workflow</span></div>
-        <div class="stat"><strong>1</strong><span data-en="tool hub" data-es="tool hub">tool hub</span></div>
-      </div>
-    </aside>
   </section>
 
   <section class="section">
@@ -219,27 +207,15 @@ h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
       <a class="card" data-cat="depression" href="phq9.html">
         <div class="card-top">
           <div class="abbr">PHQ-9</div>
-          <div class="age">18+</div>
         </div>
         <div class="name" data-en="Patient Health Questionnaire-9" data-es="Patient Health Questionnaire-9">Patient Health Questionnaire-9</div>
-        <div class="desc" data-en="Standard adult depression screening and symptom severity monitoring for routine clinical follow-up." data-es="Standard adult depression screening and symptom severity monitoring for routine clinical follow-up.">Standard adult depression screening and symptom severity monitoring for routine clinical follow-up.</div>
-        <div class="meta">
-          <span class="pill">9 items</span>
-          <span class="pill">Max 27</span>
-        </div>
       </a>
 
       <a class="card" data-cat="depression" href="phqa.html">
         <div class="card-top">
           <div class="abbr">PHQ-A</div>
-          <div class="age">12+</div>
         </div>
         <div class="name" data-en="Patient Health Questionnaire - Adolescent" data-es="Patient Health Questionnaire - Adolescent">Patient Health Questionnaire - Adolescent</div>
-        <div class="desc" data-en="Adolescent depression severity screening with item-level scoring and clinical interpretation support." data-es="Adolescent depression severity screening with item-level scoring and clinical interpretation support.">Adolescent depression severity screening with item-level scoring and clinical interpretation support.</div>
-        <div class="meta">
-          <span class="pill">9 items</span>
-          <span class="pill">Max 27</span>
-        </div>
       </a>
     </div>
   </section>
@@ -254,14 +230,8 @@ h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
       <a class="card" data-cat="anxiety" href="gad7.html">
         <div class="card-top">
           <div class="abbr">GAD-7</div>
-          <div class="age">18+</div>
         </div>
         <div class="name" data-en="Generalized Anxiety Disorder-7" data-es="Generalized Anxiety Disorder-7">Generalized Anxiety Disorder-7</div>
-        <div class="desc" data-en="Widely used anxiety screening and monitoring tool for adult outpatient and primary care workflows." data-es="Widely used anxiety screening and monitoring tool for adult outpatient and primary care workflows.">Widely used anxiety screening and monitoring tool for adult outpatient and primary care workflows.</div>
-        <div class="meta">
-          <span class="pill">7 items</span>
-          <span class="pill">Max 21</span>
-        </div>
       </a>
     </div>
   </section>
@@ -276,14 +246,8 @@ h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
       <a class="card" data-cat="trauma" href="pcl5.html">
         <div class="card-top">
           <div class="abbr">PCL-5</div>
-          <div class="age">18+</div>
         </div>
         <div class="name" data-en="PTSD Checklist for DSM-5" data-es="PTSD Checklist for DSM-5">PTSD Checklist for DSM-5</div>
-        <div class="desc" data-en="PTSD symptom severity monitoring aligned with DSM-5 symptom clusters." data-es="PTSD symptom severity monitoring aligned with DSM-5 symptom clusters.">PTSD symptom severity monitoring aligned with DSM-5 symptom clusters.</div>
-        <div class="meta">
-          <span class="pill">20 items</span>
-          <span class="pill">Max 80</span>
-        </div>
       </a>
     </div>
   </section>
@@ -298,14 +262,8 @@ h1{margin:0 0 12px;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
       <a class="card" data-cat="capacity" href="capacity.html">
         <div class="card-top">
           <div class="abbr">Capacity</div>
-          <div class="age">Clinical</div>
         </div>
         <div class="name" data-en="Decisional Capacity Assessment" data-es="Decisional Capacity Assessment">Decisional Capacity Assessment</div>
-        <div class="desc" data-en="Structured capacity workflow with simple and MacCAT-T style modes, plus clinical note generation." data-es="Structured capacity workflow with simple and MacCAT-T style modes, plus clinical note generation.">Structured capacity workflow with simple and MacCAT-T style modes, plus clinical note generation.</div>
-        <div class="meta">
-          <span class="pill">4 domains</span>
-          <span class="pill">Note output</span>
-        </div>
       </a>
     </div>
   </section>
